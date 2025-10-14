@@ -1,0 +1,28 @@
+/* Upload 리스트를 가로 정렬로 바꾸기 */
+.ant-upload-list {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 8px; /* 항목 사이 간격 */
+  overflow-x: auto; /* 넘치면 가로 스크롤 */
+  padding: 4px 0;
+}
+
+/* 각 업로드 항목 크기 고정 */
+.ant-upload-list-item {
+  width: 150px !important;   /* 원하는 고정 폭 */
+  height: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CustomRadio 초록색 테마 오버라이드 */
+
+/* 버튼형 라디오일 경우 */
+.ant-radio-button-wrapper-checked {
+  border-color: #36C96D !important;
+  background-color: #36C96D !important;
+  color: #fff !important;
+}
+
+

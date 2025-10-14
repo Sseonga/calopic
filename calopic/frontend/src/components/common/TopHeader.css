@@ -1,0 +1,6 @@
+.header-logo{
+    height: 100px !important;          /* 높이만 고정 */
+    width: auto ;           /* 가로 자동 */
+    margin-top: 30px !important;
+    object-fit: contain;
+}

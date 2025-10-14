@@ -1,25 +1,22 @@
-import logo from './logo.svg';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LayoutShell from './components/common/LayoutShell';
+import PageUpload from './pages/upload/PageUpload';
+import PageDiary from './pages/diary/PageDiary';
+import PageCalculator from './pages/calculator/PageCalculator';
+import ComponentView from './pages/ComponentView';
 import './App.css';
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<LayoutShell />}>
+          <Route index element={<PageUpload />} />
+          <Route path="/diary" element={<PageDiary />} />
+          <Route path="/calculator" element={<PageCalculator />} />
+          <Route path="/component" element={<ComponentView/>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

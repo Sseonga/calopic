@@ -1,0 +1,67 @@
+/* antd 기본 아이템 박스 크기/정렬 재정의 */
+.ant-menu .ant-menu-item {
+  height: 120px !important;          /* 아이콘 크기에 맞춰 충분히 크게 */
+  line-height: 1 !important;         /* 텍스트 줄간격 초기화 */
+  padding: 8px 0 !important;         /* 위아래 여백 */
+  display: flex !important;          /* 가운데 정렬 */
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;              /* 불필요 간격 제거 */
+}
+
+.nav-item {
+  height: 120px;               /* 아이콘/텍스트가 70px 폭에 잘 맞도록 */
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  user-select: none;
+  position: relative;
+}
+
+/* 아이콘 기본 색상(회색) */
+.nav-icon {
+  font-size: 30px !important;
+  color: rgba(255,255,255,0.75);
+  transition: color .2s ease;
+}
+
+/* 텍스트 */
+.nav-text {
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(255,255,255,0.75);
+  white-space: nowrap;
+  margin-inline-start: 0px !important;
+}
+
+/* hover 시 약간 밝게 */
+.ant-menu-dark .ant-menu-item:hover .nav-icon,
+.ant-menu-dark .ant-menu-item:hover .nav-text {
+  color: #ffffff;
+}
+
+/* 선택(클릭)된 상태: 아이콘/텍스트 초록색, 하단 인디케이터 */
+.nav-item.is-active .nav-icon,
+.nav-item.is-active .nav-text {
+  color: #36C96D;             /* 원하는 초록색 */
+}
+
+
+
+/* antd 기본 selected 배경 제거(원하면 유지) */
+.ant-menu-dark .ant-menu-item-selected {
+  background: transparent !important;
+}
+/* 전체 사이드바 배경색 */
+.ant-layout-sider {
+  background: #001529 !important;
+  border-top-right-radius: 15px !important;
+  border-bottom-right-radius: 15px !important;
+  overflow: hidden; /* 내부 메뉴가 둥근 모서리를 넘지 않도록 */
+}
+
+
