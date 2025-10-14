@@ -1,0 +1,54 @@
+/* 페이지 전체를 감싸는 div의 스타일 */
+.calculator-page {
+    padding: 24px;
+    background-color: #ffffff;
+}
+
+/* 상단 카드들의 높이를 동일하게 맞추기 위한 스타일 */
+.fill-height-card {
+    height: 100%;
+}
+
+/* 식품 검색 결과 테이블의 위쪽 여백 */
+.search-results-table {
+    margin-top: 16px;
+}
+
+/* 선택 리스트의 삭제 아이콘 스타일 */
+.delete-icon {
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* 카드 내 작은 제목 스타일 (예: 활동대사량) */
+.card-title {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+/* 활동대사량 카드의 칼로리 헤더 스타일 */
+.activity-kcal-header {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* 카드 안의 빨간색 경고/안내 문구 스타일 */
+.warning-text {
+    color: red;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+/* ⭐️ 중간 영역(칼로리 정보)의 위쪽 여백 */
+.calorie-info-row {
+    margin-top: 24px;
+}
+
+/* ⭐️ 하단 영역(영양소 정보)의 위쪽 여백 */
+.macro-info-row {
+    margin-top: 16px;
+}
