@@ -32,7 +32,7 @@ const PageCalculator = () => {
       name: food.name,
       amount: '100g', // 기본값
       carbs: '22.5g', // 실제로는 계산된 값이 들어가야 합니다.
-      protein: '22.5g',
+      protein: '21.5g',
       fat: '22.5g',
       calories: `${food.calories}Kcal`,
     };
