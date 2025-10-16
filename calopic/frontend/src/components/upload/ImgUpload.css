@@ -1,0 +1,17 @@
+.img-upload-btn{
+    background-color: #36C96D !important;
+}
+
+.img-upload-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.219);
+}
+
+/* 바깥(wrapper) 안의 실제 드래그 박스에 hover */
+.img-upload-root .ant-upload-drag:hover {
+  border-color: #36c96d !important;
+  background: #f6fff6 !important;
+}
+
+
+
