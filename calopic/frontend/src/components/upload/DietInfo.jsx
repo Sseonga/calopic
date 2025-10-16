@@ -1,5 +1,6 @@
 // src/pages/PageUpload/components/DietInfo.jsx
 import React, { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { Card, InputNumber, Form, Input, Space, Tag, Empty, Select } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import CustomModal1 from '../common/CustomModal1';
@@ -12,7 +13,7 @@ const FOOD_OPTIONS = [
   { value: 'carrot', label: '당근', kcalPer100: 41, img: IMG_CARROT },
 ];
 
-export default function DietInfo({ onChange }) {
+export default function DietInfo({ onChange, onTotalChange }) {
   const [items, setItems] = useState([
     {
       id: crypto.randomUUID(),
@@ -33,6 +34,11 @@ export default function DietInfo({ onChange }) {
     () => items.reduce((sum, it) => sum + Math.round((it.kcalPer100 * toGram(it.amount, it.unit)) / 100), 0),
     [items]
   );
+
+  // totalKcal이 바뀔 때 부모에게 전달
+  useEffect(() => {
+    onTotalChange && onTotalChange(totalKcal);
+  }, [totalKcal]);
 
   const emit = (next) => {
     setItems(next);

@@ -84,7 +84,7 @@ export default function ImgUpload({
             accept={accept}
             multiple={multiple}
             crop={{ rotationSlider: true }}
-            childrenText="+"
+            childrenText={<PlusOutlined style={{ fontSize: 24, color: '#999' }} className="img-upload-plus-btn"/>}
           />
         </div>
       </div>

@@ -13,5 +13,14 @@
   background: #f6fff6 !important;
 }
 
+.ant-upload:hover {
+    border-color: #36C96D !important;
+}
 
+.img-upload-plus-btn{
+    transition: color 0.3s ease;
+}
 
+.ant-upload:hover .img-upload-plus-btn {
+  color: #36C96D !important;
+}
