@@ -3,6 +3,7 @@ import LayoutShell from './components/common/LayoutShell';
 import PageUpload from './pages/upload/PageUpload';
 import PageDiary from './pages/diary/PageDiary';
 import PageCalculator from './pages/calculator/PageCalculator';
+import PageMypage from './pages/mypage/PageMypage';
 import ComponentView from './pages/ComponentView';
 import './App.css';
 
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/diary" element={<PageDiary />} />
           <Route path="/calculator" element={<PageCalculator />} />
           <Route path="/component" element={<ComponentView/>} />
+          <Route path="/mypage" element={<PageMypage />} />
         </Route>
       </Routes>
     </BrowserRouter>
