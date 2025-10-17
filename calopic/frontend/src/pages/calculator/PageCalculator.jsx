@@ -1,7 +1,6 @@
-import React, { useState } from 'react'; // ⭐️ 1. useState를 import합니다.
-import { Input, Table, Card, Col, Row, Statistic, Button, Space } from 'antd';
+import React, { useState } from 'react';
 import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import './PageCalculator.css';
+import './PageCalculator.css'; // 우리가 만든 CSS 파일 불러오기
 
 // --- 임시 데이터 ---
 const foodData = [
@@ -18,142 +17,155 @@ const foodData = [
 ];
 
 const PageCalculator = () => {
-  // ⭐️ 2. 선택된 음식 목록을 '기억'할 state를 만듭니다.
   const [selectedFoods, setSelectedFoods] = useState([
-    // 처음에는 비빔밥이 선택된 상태로 시작
     { key: 'initial-1', name: '비빔밥', amount: '100g', carbs: '22.5g', protein: '22.5g', fat: '22.5g', calories: '350Kcal' },
   ]);
 
-  // ⭐️ 3. 선택 리스트에 음식을 '추가'하는 함수를 만듭니다.
   const handleAddFood = (food) => {
-    // 추가할 새로운 음식 객체를 만듭니다. (key는 중복되지 않게 현재 시간으로)
     const newFood = {
-      key: Date.now(), // 고유한 key 생성
+      key: Date.now(),
       name: food.name,
-      amount: '100g', // 기본값
-      carbs: '22.5g', // 실제로는 계산된 값이 들어가야 합니다.
+      amount: '100g',
+      carbs: '22.5g',
       protein: '21.5g',
       fat: '22.5g',
       calories: `${food.calories}Kcal`,
     };
-
-    // 기존 목록(...selectedFoods)에 새로운 음식(newFood)을 추가하여 state를 업데이트합니다.
     setSelectedFoods([...selectedFoods, newFood]);
   };
 
-  // ⭐️ 4. 선택 리스트에서 음식을 '삭제'하는 함수를 만듭니다.
   const handleDeleteFood = (keyToDelete) => {
-    // 삭제할 key와 다른 key를 가진 음식들만 남겨 새로운 배열을 만듭니다.
     const updatedFoods = selectedFoods.filter(food => food.key !== keyToDelete);
-    // 걸러진 새로운 배열로 state를 업데이트합니다.
     setSelectedFoods(updatedFoods);
   };
 
-  const selectedColumns = [
-    { title: '식품명', dataIndex: 'name', key: 'name' },
-    { title: '양(g)', dataIndex: 'amount', key: 'amount' },
-    { title: '탄수화물', dataIndex: 'carbs', key: 'carbs' },
-    { title: '단백질', dataIndex: 'protein', key: 'protein' },
-    { title: '지방', dataIndex: 'fat', key: 'fat' },
-    { title: '칼로리', dataIndex: 'calories', key: 'calories' },
-    {
-      title: '',
-      key: 'action',
-      // ⭐️ 5. 삭제 버튼에 onClick 이벤트를 연결합니다.
-      render: (text, record) => (
-          <CloseCircleOutlined
-              className="delete-icon"
-              onClick={() => handleDeleteFood(record.key)}
-          />
-      ),
-    },
-  ];
-
   return (
       <div className="calculator-page">
-        <Row gutter={[24, 24]}>
-          <Col xs={24} lg={12}>
-            <Card className="fill-height-card">
-              <Input
-                  placeholder="식품명을 입력하세요."
-                  prefix={<SearchOutlined />}
-                  size="large"
-              />
-              <Table
-                  dataSource={foodData}
-                  columns={[
-                    { title: '음식', dataIndex: 'name', key: 'name' },
-                    { title: '칼로리', dataIndex: 'calories', key: 'calories' },
-                  ]}
-                  pagination={{ pageSize: 5, total: 14, showSizeChanger: false }}
-                  className="search-results-table"
-                  // ⭐️ 6. 음식 목록의 각 행을 클릭했을 때 handleAddFood 함수를 실행합니다.
-                  onRow={(record) => ({
-                    onClick: () => handleAddFood(record),
-                  })}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card title="선택 리스트" className="fill-height-card">
-              <Table
-                  // ⭐️ 7. dataSource를 고정된 데이터가 아닌, 우리가 만든 state로 변경합니다.
-                  dataSource={selectedFoods}
-                  columns={selectedColumns}
-                  pagination={false}
-              />
-            </Card>
-          </Col>
-        </Row>
+        {/* --- 상단 영역: Row와 Col을 div로 대체 --- */}
+        <div className="row">
+          <div className="col col-lg-12">
+            {/* Card를 div로 대체 */}
+            <div className="card">
+              <div className="card-body">
+                {/* Input을 div와 input으로 대체 */}
+                <div className="input-wrapper">
+                  <SearchOutlined className="input-icon" />
+                  <input
+                      type="text"
+                      placeholder="식품명을 입력하세요."
+                      className="input-field"
+                  />
+                </div>
+                {/* Table을 table로 대체하고, map 함수로 데이터 렌더링 */}
+                <table className="custom-table food-list-table">
+                  <thead>
+                  <tr>
+                    <th>음식</th>
+                    <th>칼로리</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {foodData.slice(0, 7).map(food => (
+                      <tr key={food.key} onClick={() => handleAddFood(food)}>
+                        <td>{food.name}</td>
+                        <td>{food.calories}</td>
+                      </tr>
+                  ))}
+                  </tbody>
+                </table>
+                <div className="pagination">...</div>
+              </div>
+            </div>
+          </div>
+          <div className="col col-lg-12">
+            <div className="card">
+              <div className="card-title">선택 리스트</div>
+              <div className="card-body">
+                <table className="custom-table">
+                  <thead>
+                  <tr>
+                    <th>식품명</th>
+                    <th>양(g)</th>
+                    <th>탄수화물</th>
+                    <th>단백질</th>
+                    <th>지방</th>
+                    <th>칼로리</th>
+                    <th></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {selectedFoods.map(food => (
+                      <tr key={food.key}>
+                        <td>{food.name}</td>
+                        <td>{food.amount}</td>
+                        <td>{food.carbs}</td>
+                        <td>{food.protein}</td>
+                        <td>{food.fat}</td>
+                        <td>{food.calories}</td>
+                        <td>
+                          <CloseCircleOutlined
+                              className="delete-icon"
+                              onClick={() => handleDeleteFood(food.key)}
+                          />
+                        </td>
+                      </tr>
+                  ))}
+                  </tbody>
+                </table>
+                <div className="pagination">...</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {/* --- 중간 영역: 칼로리 정보 --- */}
-        {/* ⭐️ style 속성을 className으로 변경 */}
-        <Row gutter={[16, 16]} className="calorie-info-row">
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title="기초대사량" value={1300} suffix="Kcal" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <p className="card-title">활동대사량</p>
-              <Space wrap>
-                <Button type="primary" danger>활동량 적음</Button>
-                <Button>활동량 보통</Button>
-                <Button>활동량 많음</Button>
-              </Space>
+        {/* --- 중간/하단 영역: 동일한 방식으로 div로 대체 --- */}
+        <div className="row" style={{ marginTop: '24px', rowGap: '16px' }}>
+          <div className="col col-sm-8">
+            <div className="card statistic-card"><div className="card-body">
+              <div className="statistic-title">기초대사량</div>
+              <div className="statistic-value">1300 Kcal</div>
+            </div></div>
+          </div>
+          <div className="col col-sm-8">
+            <div className="card"><div className="card-body">
+              <p style={{ color: 'rgba(0,0,0,0.45)'}}>활동대사량</p>
+              <div className="activity-buttons">
+                <button>활동량 적음</button> <button>활동량 보통</button> <button>활동량 많음</button>
+              </div>
               <h2 className="activity-kcal-header">2100 Kcal</h2>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title="총 음식 칼로리" value={2200} suffix="Kcal" />
-              <p className="warning-text">*다이어트를 목표로 한다면 약 1400~1600Kcal를 유지하십시오.</p>
-            </Card>
-          </Col>
-        </Row>
+            </div></div>
+          </div>
+          <div className="col col-sm-8">
+            <div className="card statistic-card"><div className="card-body">
+              <div className="statistic-title">총 음식 칼로리</div>
+              <div className="statistic-value">2200 Kcal</div>
+              <p className="warning-text">*다이어트를 목표로 한다면...</p>
+            </div></div>
+          </div>
+        </div>
 
-        {/* --- 하단 영역: 영양소 정보 --- */}
-        {/* ⭐️ style 속성을 className으로 변경 */}
-        <Row gutter={[16, 16]} className="macro-info-row">
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title="총 단백질" value={50} suffix="g" />
-              <p className="warning-text">*약 100g의 단백질을 더 섭취하기를 권장합니다.</p>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title="총 탄수화물" value={150} suffix="g" />
-              <p className="warning-text">*탄수화물의 비율을 낮추기를 권장합니다.</p>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title="총 지방" value={100} suffix="g" />
-            </Card>
-          </Col>
-        </Row>
+        <div className="row" style={{ marginTop: '16px', rowGap: '16px' }}>
+          <div className="col col-sm-8">
+            <div className="card statistic-card"><div className="card-body">
+              <div className="statistic-title">총 단백질</div>
+              <div className="statistic-value">50 g</div>
+              <p className="warning-text">*약 100g의 단백질을...</p>
+            </div></div>
+          </div>
+          <div className="col col-sm-8">
+            <div className="card statistic-card"><div className="card-body">
+              <div className="statistic-title">총 탄수화물</div>
+              <div className="statistic-value">150 g</div>
+              <p className="warning-text">*탄수화물의 비율을...</p>
+            </div></div>
+          </div>
+          <div className="col col-sm-8">
+            <div className="card statistic-card"><div className="card-body">
+              <div className="statistic-title">총 지방</div>
+              <div className="statistic-value">100 g</div>
+            </div></div>
+          </div>
+        </div>
       </div>
   );
 };
