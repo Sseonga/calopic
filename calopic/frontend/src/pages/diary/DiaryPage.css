@@ -23,7 +23,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding-right: 10px;
+
     padding-left: 0;
     margin-top: -5px;
 }
@@ -336,6 +336,7 @@
 .water-control-group {
     /* 버튼을 제목 옆으로, 게이지를 다음 줄로 보내기 위한 핵심 설정 */
     display: contents;
+
 }
 
 /* water-button-row (버튼) 스타일: 제목 옆에 나란히 배치 */
@@ -351,7 +352,7 @@
 .water-gauge {
     flex-basis: 100%; /* 너비를 100%로 설정하여 새 줄로 이동 */
     width: 100%;
-    margin-top: 40px;
+    margin-top: 20px;
     justify-content: center; /* 중앙 정렬 */
     display: flex;
     align-items: center;
@@ -371,6 +372,7 @@
 
 /* AntD InputNumber 스타일 (직접 입력 모드) */
 .custom-water-input {
+    margin-bottom:10px;
     width: 100%;
     max-width: 150px;
     border-radius: 20px;
@@ -390,18 +392,28 @@
     width: 55px;
     height: 75px;
     background: #e6e6fa; /* 기본 연한 보라색 (배경 색상) */
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* 물방울 형태 유지 */
-    overflow: hidden; /* 내부 요소가 물방울 경계를 넘지 않도록 */
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    overflow: hidden;
+
+    /* 입체감을 위한 그림자 추가  */
+    /* 1. 바깥쪽 그림자: 살짝 띄워진 느낌 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2),
+                /* 2. 내부 그림자: 둥근 표면 느낌 강조 */
+                inset 0 0 10px rgba(255, 255, 255, 0.7);
 }
 
+/* 물 채우는 부분 */
 .water-fill {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #96c4ef; /* 채워지는 물 색상 */
+    background: #91caff; /* 채워지는 물 색상 */
     transition: height 0.5s ease-in-out;
-    border-radius: 0; /* 수면이 평평하게 */
+    border-radius: 0;
+
+    /*  채워진 부분에만 내부 그림자 추가 (선택 사항)  */
+    box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.15);
 }
 
 .calorie-display .big-number {
@@ -430,13 +442,13 @@
 .record-modal-custom .ant-modal-header {
     padding: 20px;
     border-bottom: none;
-    /* ⭐️ Modal title(기록 추가)과 날짜 영역을 양 끝으로 정렬 */
+    /* Modal title(기록 추가)과 날짜 영역을 양 끝으로 정렬 */
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-/* ⭐️ AntD의 실제 모달 제목 텍스트에만 스타일 적용 */
+/*  AntD의 실제 모달 제목 텍스트에만 스타일 적용 */
 .record-modal-custom .ant-modal-title {
     font-size: 24px;
     font-weight: 700;
@@ -446,7 +458,7 @@
 
 /* 모달 헤더 내부 제목 및 날짜 정렬 */
 .modal-header-content {
-    /* ⭐️ Modal Body의 날짜 영역을 Modal Header 오른쪽 끝으로 위치시키기 위한 조정 */
+    /*  Modal Body의 날짜 영역을 Modal Header 오른쪽 끝으로 위치시키기 위한 조정 */
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -456,9 +468,8 @@
     margin-left: auto; /* AntD title 옆에 배치되도록 오른쪽으로 밀어냅니다. */
 }
 
-/* ⭐️ 날짜 표시 스타일 조정 (제목과 수직 중앙 정렬 및 텍스트 크기 조정) */
+/* ️ 날짜 표시 스타일 조정 (제목과 수직 중앙 정렬 및 텍스트 크기 조정) */
 .modal-date-display {
-    /* 🚫 margin-top: 30px; 제거 */
     margin-top: 0;
     font-size: 20px;
     color: #666;
@@ -467,13 +478,14 @@
     gap: 5px;
 }
 
-/* ⭐️ 날짜 앞 '오늘 :' 가상 요소 제거 (안전 장치) */
+/* 날짜 앞 '오늘 :' 가상 요소 제거 (안전 장치) */
 .modal-date-display::before {
     content: none !important;
 }
 
 /* 탭 스타일 (아침, 점심, 저녁, 간식) */
 .meal-tabs-custom {
+    font-size: 50px;
     padding: 0 20px;
     margin-top: 20px; /* 날짜가 올라온 공간만큼 탭을 내립니다. */
 }
@@ -513,14 +525,14 @@
 
 .image-box {
     flex-basis: 65%; /* 이미지 영역 비율 */
-    /* 🚨 이미지 구겨짐 방지 1: height: 180px; 제거! */
+    /* 이미지 구겨짐 방지 1: height: 180px; 제거! */
     /* height: 180px; */
     border: 1px solid #ccc;
     border-radius: 8px;
     overflow: hidden;
 }
 
-/* ⭐️ 이미지 구겨짐 방지 2: Padding Hack을 이용해 4:3 비율로 고정 */
+/*  이미지 구겨짐 방지 2: Padding Hack을 이용해 4:3 비율로 고정 */
 .uploaded-image-placeholder {
     width: 100%;
     /* height: 100%; 제거 */
@@ -535,7 +547,7 @@
     position: relative; /* 내부 absolute 요소의 기준점 */
 }
 
-/* ⭐️ 이미지 없을 때 텍스트 스타일 */
+/* 이미지 없을 때 텍스트 스타일 */
 .image-placeholder-text {
     /* 텍스트를 컨테이너 중앙에 absolute로 배치 */
     position: absolute;
@@ -550,7 +562,7 @@
     font-size: 14px;
 }
 
-/* ⭐️ 이미지 구겨짐 방지 3: 이미지 스타일 */
+/*  이미지 구겨짐 방지 3: 이미지 스타일 */
 .uploaded-image-placeholder img {
     /* 이미지를 절대 위치로 부모 영역에 맞춤 */
     position: absolute;
@@ -559,7 +571,7 @@
     width: 100%;
     height: 100%;
 
-    /* ⭐️ 핵심: 이미지의 비율을 유지하며 컨테이너 영역을 채움 (이미지 구겨짐 방지) */
+    /*  핵심: 이미지의 비율을 유지하며 컨테이너 영역을 채움 (이미지 구겨짐 방지) */
     object-fit: cover;
 }
 
@@ -604,8 +616,8 @@
 
 .food-search-input {
     /* 최대 너비를 80%로 제한하여 길이를 줄임 */
-    margin-left: 20px;
-    max-width: 95%;
+
+    max-width: 140%;
     border-radius: 20px;
     padding: 10px 15px;
 }
@@ -653,6 +665,30 @@
 }
 
 
+/* AntD InputNumber 스타일 (직접 입력 모드) */
+.custom-water-input {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 150px;
+    /*  둥근 모서리(20px)를 직사각형(4px 또는 0)으로 변경 */
+    border-radius: 4px; /* 또는 0px */
+    overflow: hidden;
+    /* (이전에 적용했던) 테두리 스타일을 유지해야 합니다. */
+}
+
+/* AntD Button 스타일 */
+.water-dropdown-btn {
+    margin-top: 20px;
+    background-color: #e6e6fa; /* 연한 보라색 배경 */
+    border-color: #d1c4e9;
+    color: #512da8; /* 진한 보라색 글씨 */
+    font-weight: bold;
+    /*  둥근 모서리(20px)를 직사각형(4px 또는 0)으로 변경 */
+    border-radius: 4px; /* 또는 0px */
+}
+
+
+
 /* 5. 합계 및 저장 버튼 */
 .modal-footer-summary {
     display: flex;
@@ -675,10 +711,30 @@
     font-weight: 700;
 }
 
+/* ⭐️ 삭제 버튼 스타일: 저장 버튼 왼쪽에 보이도록 명확히 정의 */
+.del-record-btn {
+    /* 기본 AntD 스타일을 오버라이드 */
+    background-color: #fff !important;
+    border: 1px solid #d9d9d9 !important;
+    color: #999 !important;
+    border-radius: 8px;
+    width: 100px; /* JSX의 인라인 스타일과 일치 */
+    font-weight: bold;
+    height: 40px !important; /* size="large"의 기본 높이 */
+}
+
+/* ⭐️ 삭제 버튼 호버 시 스타일 */
+.del-record-btn:hover {
+    border-color: #f5222d !important; /* AntD 빨간색 */
+    color: #f5222d !important;
+}
+
+/* ⭐️ 저장 버튼 스타일 */
 .save-record-btn {
     background-color: #512da8;
     border-color: #512da8;
     border-radius: 8px;
     width: 100px;
     font-weight: bold;
+    height: 40px !important; /* size="large"의 기본 높이 */
 }
