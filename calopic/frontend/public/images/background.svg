@@ -1,0 +1,6 @@
+<svg viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <rect width="1440" height="900" fill="#2f3241"></rect>
+  <path d="M0,640 C180,600 300,560 470,590 C690,630 780,740 1040,720 C1220,706 1320,660 1440,620 L1440,900 L0,900 Z" fill="#6563a8" opacity=".85"></path>
+  <path d="M0,720 C220,760 360,760 520,720 C740,660 860,700 1040,740 C1200,776 1320,790 1440,790 L1440,900 L0,900 Z" fill="#7b78ba" opacity=".95"></path>
+  <path d="M0,820 C260,860 480,860 720,830 C990,800 1160,840 1440,860 L1440,900 L0,900 Z" fill="#9aa0e2" opacity=".9"></path>
+</svg>
