@@ -30,7 +30,7 @@ export default function TopHeader() {
     <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
       <Space size={8}>
         <img
-          src="/images/Calopic-logo.png"               // ✅ public/images 경로
+          src="/images/Calopic-logo.png"               // public/images 경로
           alt="Calopic"
           className="header-logo"
           style={{ height: 24, width: 'auto', cursor: 'pointer' }}

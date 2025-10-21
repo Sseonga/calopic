@@ -4,7 +4,7 @@ import CustomProgressbar1 from '../common/CustomProgressbar1';
 
 /* ===== 공통 색상 팔레트 ===== */
 const COLORS = {
-  calories: '#ff4d4f', // 빨강
+  calories: '#ff8486ff', // 빨강
   protein:  '#36c96d', // 초록
   carbs:    '#b37feb', // 보라
   sodium:   '#8fa1ff', // 연파랑
