@@ -6,7 +6,6 @@ import PageCalculator from './pages/calculator/PageCalculator';
 import PageMypage from './pages/mypage/PageMypage';
 import ComponentView from './pages/ComponentView';
 import PageLogin from './pages/auth/PageLogin';
-import PageJoin from './pages/auth/PageJoin';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
@@ -16,7 +15,6 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/login' element={<PageLogin />} />
-          <Route path='/join' element={<PageJoin />} />
           <Route element={<LayoutShell />}>
             <Route index element={<PageUpload />} />
             <Route path="/diary" element={<PageDiary />} />

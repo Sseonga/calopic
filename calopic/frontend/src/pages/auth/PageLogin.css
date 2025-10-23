@@ -115,11 +115,11 @@
 
 .muted{ color: var(--muted); }
 .link{
-    color: var(--muted);
+    color:#3b82f6;
     text-decoration:none;
 }
 .link:hover{ text-decoration:underline; }
-.link.strong{ color: #000; font-weight:700; }
+.link.strong{ font-weight:700; }
 
 /* 반응형 보정 */
 @media (max-width:480px){
