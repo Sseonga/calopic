@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fs.human.calopic.upload.dao.UploadDAO">
+
+  <resultMap id="FoodMap" type="fs.human.calopic.upload.vo.UploadVO">
+    <id property="foodId" column="FOOD_ID"/>
+    <result property="foodName" column="FOOD_NAME"/>
+    <result property="foodWeight" column="FOOD_WEIGHT"/>
+    <result property="foodKcal" column="FOOD_KCAL"/>
+    <result property="foodCarbo" column="FOOD_CARBO"/>
+    <result property="foodProtein" column="FOOD_PROTEIN"/>
+    <result property="foodFat" column="FOOD_FAT"/>
+    <result property="foodSugar" column="FOOD_SUGAR"/>
+    <result property="foodNatrium" column="FOOD_NATRIUM"/>
+  </resultMap>
+
+  <select id="selectAllFood" resultMap="FoodMap">
+    SELECT * FROM TB_FOOD ORDER BY FOOD_NAME
+  </select>
+
+  <select id="selectFoodByName" parameterType="string" resultMap="FoodMap">
+    SELECT * FROM TB_FOOD WHERE FOOD_NAME = #{foodName}
+  </select>
+
+</mapper>

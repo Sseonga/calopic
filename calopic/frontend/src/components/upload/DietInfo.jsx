@@ -1,55 +1,52 @@
 // src/pages/PageUpload/components/DietInfo.jsx
-import React, { useMemo, useState } from 'react';
-import { useEffect } from 'react';
-import { Card, InputNumber, Form, Input, Space, Tag, Empty, Select } from 'antd';
+import React, { useMemo, useState, useEffect } from 'react';
+import axios from 'axios';
+import { Card, InputNumber, Form, Space, Tag, Empty, Select } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import CustomModal1 from '../common/CustomModal1';
 import CustomSelect2 from '../common/CustomSelect2';
 
 const IMG_CARROT = '/images/carrot.jpg';
 
-// (임시) 검색 옵션 — DB 붙이기 전까지 사용
-const FOOD_OPTIONS = [
-  { value: 'carrot', label: '당근', kcalPer100: 41, img: IMG_CARROT },
-];
-
 export default function DietInfo({ onChange, onTotalChange }) {
-  const [items, setItems] = useState([
-    {
-      id: crypto.randomUUID(),
-      code: 'carrot',
-      name: '당근',
-      kcalPer100: 41,
-      amount: 100,
-      unit: 'g',
-      img: IMG_CARROT,
-    },
-  ]);
-
+  const [items, setItems] = useState([]);
+  const [foodOptions, setFoodOptions] = useState([]);
   const [form] = Form.useForm();
   const [unit, setUnit] = useState('g');
-  const [selectedFood, setSelectedFood] = useState(null);
+  const [selectedFood, setSelectedFood] = useState(null); // string(FOOD_NAME)
+
+  // DB에서 음식 목록 불러오기
+  useEffect(() => {
+    (async () => {
+      const res = await axios.get('http://localhost:18090/api/upload/foods');
+      const opts = (res.data || []).map((f) => ({
+        value: f.foodName,
+        label: f.foodName,
+        kcalPer100: f.foodKcal,
+        img: IMG_CARROT, // 추후 이미지 컬럼 생기면 교체
+      }));
+      setFoodOptions(opts);
+    })();
+  }, []);
 
   const totalKcal = useMemo(
     () => items.reduce((sum, it) => sum + Math.round((it.kcalPer100 * toGram(it.amount, it.unit)) / 100), 0),
     [items]
   );
 
-  // totalKcal이 바뀔 때 부모에게 전달
+  // 총 칼로리 변경 부모에 전달
   useEffect(() => {
-    onTotalChange && onTotalChange(totalKcal);
-  }, [totalKcal]);
+    if (onTotalChange) onTotalChange(totalKcal);
+  }, [totalKcal, onTotalChange]);
 
   const emit = (next) => {
     setItems(next);
-    onChange && onChange(next);
+    if (onChange) onChange(next);
   };
 
   const handleRemove = (id) => emit(items.filter((it) => it.id !== id));
   const handleAmountChange = (id, amount) =>
     emit(items.map((it) => (it.id === id ? { ...it, amount: amount ?? 0 } : it)));
-  const handleUnitChange = (id, u) =>
-    emit(items.map((it) => (it.id === id ? { ...it, unit: u } : it)));
 
   // 단위 환산(g, kg, 개[임시 1개=100g])
   function toGram(amount, u) {
@@ -59,22 +56,25 @@ export default function DietInfo({ onChange, onTotalChange }) {
     return amount; // g
   }
 
+  // 음식 추가
   const handleAdd = async () => {
-    const vals = await form.validateFields();
-    const food =
-      FOOD_OPTIONS.find((o) => o.value === vals.name) ||
-      { value: vals.name, label: vals.name, kcalPer100: 0, img: IMG_CARROT };
+    const vals = await form.validateFields(); // { name, amount }
+    const foodName = vals.name;
+
+    // 상세 정보 조회
+    const res = await axios.get(`http://localhost:18090/api/upload/foods/${encodeURIComponent(foodName)}`);
+    const f = res.data;
 
     const next = [
       ...items,
       {
         id: crypto.randomUUID(),
-        code: food.value,
-        name: food.label,
-        kcalPer100: food.kcalPer100 ?? 0,
+        code: f.foodId,
+        name: f.foodName,
+        kcalPer100: f.foodKcal ?? 0,
         amount: Number(vals.amount),
         unit,
-        img: food.img || IMG_CARROT,
+        img: IMG_CARROT,
       },
     ];
     emit(next);
@@ -118,7 +118,7 @@ export default function DietInfo({ onChange, onTotalChange }) {
               rules={[{ required: true, message: '음식명을 선택하세요' }]}
             >
               <CustomSelect2
-                options={FOOD_OPTIONS}
+                options={foodOptions}
                 value={selectedFood}
                 onChange={(v) => {
                   setSelectedFood(v);
