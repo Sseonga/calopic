@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/calopic.iml" filepath="$PROJECT_DIR$/.idea/calopic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fs.human.calopic.main.iml" filepath="$PROJECT_DIR$/.idea/modules/fs.human.calopic.main.iml" />
     </modules>
   </component>
 </project>
