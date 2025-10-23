@@ -100,6 +100,7 @@ const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
   };
 
   const menuItems = [
+      { key: '0.5', label: '100ml' },
     { key: '0.2', label: '200ml' },
     { key: '0.5', label: '500ml' },
     { type: 'divider' },
@@ -166,7 +167,7 @@ export default function PageDiary() {
         if (Object.keys(initialData).length === 0) {
             // 예시로 22일 기록을 추가 (2025-10-22)
             initialData['2025-10-22'] = {
-                ...INITIAL_DAILY_RECORD, // 👈 waterIntake 포함
+                ...INITIAL_DAILY_RECORD, //waterIntake 포함
                 breakfast: { items: [{foodCode: 'E001', foodName: '삶은 계란', foodKcal: 80}], calorie: 80, image: null },
                 lunch: { items: [{foodCode: 'C001', foodName: '닭가슴살 샐러드', foodKcal: 350}], calorie: 350, image: null },
             };
@@ -248,7 +249,7 @@ export default function PageDiary() {
 
             const newDayRecords = {
                 ...currentDayRecords,
-                waterIntake: finalIntake, // 👈 수분 섭취량 업데이트
+                waterIntake: finalIntake,
             };
 
             return {

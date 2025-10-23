@@ -729,7 +729,7 @@
     color: #f5222d !important;
 }
 
-/* ⭐️ 저장 버튼 스타일 */
+/* 저장 버튼 스타일 */
 .save-record-btn {
     background-color: #512da8;
     border-color: #512da8;
@@ -752,7 +752,7 @@
     height: 100%;
 }
 
-/* 🚨 새로운 기록 표시 스타일: 오른쪽 하단 모서리 블록 */
+/*  새로운 기록 표시 스타일: 오른쪽 하단 모서리 블록 */
 .diary-record-dot {
     /* (이름은 재사용하되 스타일을 변경) */
     position: absolute;
