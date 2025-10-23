@@ -3,17 +3,33 @@ import {
   AppleOutlined,
   BookOutlined,
   CalculatorOutlined,
+  TeamOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons';
 import './Sidebar.css';
 
-const NAVS = [
+const NAVS_DEFAULT = [
   { key: '/', label: '식단 업로드', Icon: AppleOutlined },
   { key: '/diary', label: '식단 다이어리', Icon: BookOutlined },
   { key: '/calculator', label: '칼로리 계산기', Icon: CalculatorOutlined },
 ];
 
+// 관리자페이지 사이드바
+const NAVS_ADMIN = [
+  { key: '/admin/users',    label: '유저 관리',         Icon: TeamOutlined },
+  { key: '/admin/classes',  label: '음식 관리',   Icon: DatabaseOutlined },
+];
+
 export default function Sidebar({ activePath, onNavigate }) {
-  const items = NAVS.map(({ key, label, Icon }) => {
+  // /admin 또는 /admin/하위면 관리자 메뉴 세트 사용
+  const isAdmin = activePath === '/admin' || activePath.startsWith('/admin/');
+  const navs = isAdmin ? NAVS_ADMIN : NAVS_DEFAULT;
+
+  const selectedKey =
+    navs.find(({ key }) => activePath === key || activePath.startsWith(key + '/'))?.key
+    || (isAdmin ? '/admin/users' : '/');
+
+  const items = navs.map(({ key, label, Icon }) => {
     const active = (activePath === '/' ? '/' : activePath) === key;
     return {
       key,
@@ -32,7 +48,7 @@ export default function Sidebar({ activePath, onNavigate }) {
     <Menu
       theme="dark"
       mode="inline"
-      selectedKeys={[activePath === '/' ? '/' : activePath]}
+      selectedKeys={[selectedKey]}
       items={items}
       onClick={(e) => onNavigate(e.key)}
       inlineIndent={0}
