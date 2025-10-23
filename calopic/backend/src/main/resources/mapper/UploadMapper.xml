@@ -1,28 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="fs.human.calopic.upload.dao.UploadDAO">
 
-  <resultMap id="FoodMap" type="fs.human.calopic.upload.vo.UploadVO">
-    <id property="foodId" column="FOOD_ID"/>
-    <result property="foodName" column="FOOD_NAME"/>
-    <result property="foodWeight" column="FOOD_WEIGHT"/>
-    <result property="foodKcal" column="FOOD_KCAL"/>
-    <result property="foodCarbo" column="FOOD_CARBO"/>
-    <result property="foodProtein" column="FOOD_PROTEIN"/>
-    <result property="foodFat" column="FOOD_FAT"/>
-    <result property="foodSugar" column="FOOD_SUGAR"/>
-    <result property="foodNatrium" column="FOOD_NATRIUM"/>
-  </resultMap>
+    <resultMap id="FoodMap" type="fs.human.calopic.upload.vo.UploadVO">
+        <id     property="foodId"         column="FOOD_ID"/>
+        <result property="foodName"       column="FOOD_NAME"/>
+        <result property="foodWeight"     column="FOOD_WEIGHT"  jdbcType="VARCHAR"/>
+        <result property="foodWeightGram" column="FOOD_WEIGHT_GRAM" jdbcType="NUMERIC"/>
 
-  <select id="selectAllFood" resultMap="FoodMap">
-    SELECT * FROM TB_FOOD ORDER BY FOOD_NAME
-  </select>
+        <result property="foodKcal"    column="FOOD_KCAL"    javaType="java.math.BigDecimal"/>
+        <result property="foodCarbo"   column="FOOD_CARBO"   javaType="java.math.BigDecimal"/>
+        <result property="foodProtein" column="FOOD_PROTEIN" javaType="java.math.BigDecimal"/>
+        <result property="foodFat"     column="FOOD_FAT"     javaType="java.math.BigDecimal"/>
+        <result property="foodSugar"   column="FOOD_SUGAR"   javaType="java.math.BigDecimal"/>
+        <result property="foodNatrium" column="FOOD_NATRIUM" javaType="java.math.BigDecimal"/>
+    </resultMap>
 
-  <select id="selectFoodByName" parameterType="string" resultMap="FoodMap">
-    SELECT * FROM TB_FOOD WHERE FOOD_NAME = #{foodName}
-  </select>
+    <!-- 문자열 FOOD_WEIGHT에서 숫자만 추출해 정수로 내려줌 -->
+    <sql id="FoodColumns">
+        FOOD_ID,
+        FOOD_NAME,
+        FOOD_KCAL,
+        FOOD_CARBO,
+        FOOD_PROTEIN,
+        FOOD_FAT,
+        FOOD_SUGAR,
+        FOOD_NATRIUM,
+        FOOD_WEIGHT,
+        TO_NUMBER(REGEXP_SUBSTR(FOOD_WEIGHT, '\d+')) AS FOOD_WEIGHT_GRAM
+    </sql>
 
+    <select id="selectAllFood" resultMap="FoodMap">
+        SELECT
+        <include refid="FoodColumns"/>
+        FROM TB_FOOD
+        ORDER BY FOOD_NAME
+    </select>
+
+    <!-- 단일 파라미터면 @Param("foodName") 권장 -->
+    <select id="selectFoodByName" resultMap="FoodMap" parameterType="string">
+        SELECT
+        <include refid="FoodColumns"/>
+        FROM TB_FOOD
+        WHERE FOOD_NAME = #{value}
+    </select>
 </mapper>
