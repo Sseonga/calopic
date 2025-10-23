@@ -738,3 +738,37 @@
     font-weight: bold;
     height: 40px !important; /* size="large"의 기본 높이 */
 }
+
+
+/* ---------------------------------------------------- */
+/* 달력 드롭다운 스타일 */
+/* ---------------------------------------------------- */
+/* DatePicker 드롭다운 내부의 모든 날짜 셀 */
+.ant-picker-cell-inner {
+    position: relative; /* 자식 요소인 블록의 기준점 */
+    display: flex; /* 날짜 숫자를 중앙 정렬 */
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* 🚨 새로운 기록 표시 스타일: 오른쪽 하단 모서리 블록 */
+.diary-record-dot {
+    /* (이름은 재사용하되 스타일을 변경) */
+    position: absolute;
+    bottom: 0; /* 셀의 맨 아래에 붙임 */
+    right: 0; /* 셀의 맨 오른쪽에 붙임 */
+    width: 6px; /* 작은 블록 크기 */
+    height: 6px;
+    background-color: #40a9ff; /* 옅은 파란색 (기록이 있다는 의미) */
+    /* border-radius: 50%; 를 제거하여 사각형 블록으로 만듭니다. */
+    border-top-left-radius: 4px; /* 보기 좋게 왼쪽 위 모서리만 둥글게 */
+}
+
+/* 날짜가 오늘 날짜이거나 선택된 날짜일 때도 점이 보이도록 스타일링 */
+/* Ant Design 기본 스타일과 겹치지 않도록 z-index를 고려할 필요가 있습니다. */
+.ant-picker-cell-selected .diary-record-dot,
+.ant-picker-cell-today .diary-record-dot {
+    /* 선택된 날짜에서는 기록 표시 색상을 진한 색으로 변경 */
+    background-color: #1890ff;
+}
