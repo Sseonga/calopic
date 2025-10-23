@@ -248,7 +248,7 @@ export default function PageDiary() {
 
             const newDayRecords = {
                 ...currentDayRecords,
-                waterIntake: finalIntake, // 👈 수분 섭취량 업데이트
+                waterIntake: finalIntake,
             };
 
             return {
