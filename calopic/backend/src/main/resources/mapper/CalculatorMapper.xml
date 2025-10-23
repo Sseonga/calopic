@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fs.human.calopic.calculator.dao.CalculatorDAO">
+
+    <select id="selectAllFoodsForCalculator" resultType="fs.human.calopic.calculator.vo.CalculatorVO">
+        SELECT
+            FOOD_ID    AS foodId,    /* VO의 foodId 필드와 매칭 */
+            FOOD_NAME  AS foodName,  /* VO의 foodName 필드와 매칭 */
+            FOOD_KCAL  AS foodKcal   /* VO의 foodKcal 필드와 매칭 */
+        FROM
+            TB_FOOD
+        ORDER BY
+            FOOD_NAME ASC /* 음식 이름 가나다 순으로 정렬 */
+    </select>
+
+</mapper>

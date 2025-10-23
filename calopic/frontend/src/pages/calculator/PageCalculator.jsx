@@ -1,89 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import './PageCalculator.css';
 
 // --- 임시 데이터 ---
-const foodData = [
-  { key: '1', name: '닭갈비', calories: 95 }, { key: '2', name: '치킨', calories: 165 },
-  { key: '3', name: '삼겹살', calories: 215 }, { key: '4', name: '보쌈', calories: 580 },
-  { key: '5', name: '사과', calories: 450 }, { key: '6', name: '계란', calories: 95 },
-  { key: '7', name: '닭가슴살', calories: 165 }, { key: '8', name: '현미밥', calories: 215 },
-  { key: '9', name: '비빔밥', calories: 580 }, { key: '10', name: '불고기', calories: 450 },
-];
+// const foodData = [
+//   { key: '1', name: '닭갈비', calories: 95 }, { key: '2', name: '치킨', calories: 165 },
+//   { key: '3', name: '삼겹살', calories: 215 }, { key: '4', name: '보쌈', calories: 580 },
+//   { key: '5', name: '사과', calories: 450 }, { key: '6', name: '계란', calories: 95 },
+//   { key: '7', name: '닭가슴살', calories: 165 }, { key: '8', name: '현미밥', calories: 215 },
+//   { key: '9', name: '비빔밥', calories: 580 }, { key: '10', name: '불고기', calories: 450 },
+// ];
 
-// ⭐️ 1. 페이지네이션 컴포넌트를 이 파일 안에 직접 만듭니다.
+// ⭐️ 페이지네이션 컴포넌트 (파일 내부에 정의)
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
-  // 데이터가 없을 경우 페이지네이션을 보여주지 않음
-  if (totalPages === 0) {
-    return null;
-  }
-
+  for (let i = 1; i <= totalPages; i++) { pageNumbers.push(i); }
+  if (totalPages <= 1) return null;
   return (
       <nav className="pagination-container">
-        <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-button"
-        >
-          &lt;
-        </button>
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="pagination-button">&lt;</button>
         {pageNumbers.map(number => (
-            <button
-                key={number}
-                onClick={() => onPageChange(number)}
-                className={`pagination-button ${currentPage === number ? 'active' : ''}`}
-            >
-              {number}
-            </button>
+            <button key={number} onClick={() => onPageChange(number)} className={`pagination-button ${currentPage === number ? 'active' : ''}`}>{number}</button>
         ))}
-        <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-button"
-        >
-          &gt;
-        </button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="pagination-button">&gt;</button>
       </nav>
   );
 };
 
 
 const PageCalculator = () => {
+  // ⭐️ 백엔드에서 받아올 전체 음식 목록을 저장할 state
+  const [allFoodData, setAllFoodData] = useState([]);
   const [selectedFoods, setSelectedFoods] = useState([
     { key: 'initial-1', name: '비빔밥', amount: '100g', carbs: '22.5g', protein: '22.5g', fat: '22.5g', calories: '350Kcal' },
   ]);
-
-  //  각 테이블의 '현재 페이지'를 기억할 state 추가
   const [foodListPage, setFoodListPage] = useState(1);
   const [selectedListPage, setSelectedListPage] = useState(1);
-
   const ITEMS_PER_PAGE = 7;
 
-  const totalFoodPages = Math.ceil(foodData.length / ITEMS_PER_PAGE);
+  // ⭐️ 백엔드에서 데이터를 가져오는 부분
+  useEffect(() => {
+    // 백엔드 API 주소 (CalculatorController의 @GetMapping 경로)
+    const apiUrl = 'http://localhost:18090/api/calculator/foods'; // ⭐️ 여기가 API 주소입니다!
+
+    axios.get(apiUrl)
+        .then(response => {
+          // 백엔드 VO (foodId, foodName, foodKcal) -> 프론트 테이블 (key, name, calories) 형태로 변환
+          const formattedData = response.data.map(food => ({
+            key: food.foodId.toString(), // key는 문자열
+            name: food.foodName,
+            calories: food.foodKcal // 칼로리는 숫자 그대로 사용 가능
+          }));
+          setAllFoodData(formattedData); // 받아온 데이터로 state 업데이트
+        })
+        .catch(error => {
+          console.error("음식 데이터를 불러오는 중 오류 발생:", error);
+        });
+  }, []); // [] : 처음 한 번만 실행
+
+  // 페이지 계산 및 데이터 슬라이싱 (allFoodData 기준)
+  const totalFoodPages = Math.ceil(allFoodData.length / ITEMS_PER_PAGE);
   const totalSelectedPages = Math.ceil(selectedFoods.length / ITEMS_PER_PAGE);
-
-  //  현재 페이지에 맞는 데이터만 '잘라서' 보여주기 위한 변수들
-  const currentFoodData = foodData.slice(
-      (foodListPage - 1) * ITEMS_PER_PAGE,
-      foodListPage * ITEMS_PER_PAGE
-  );
-  const currentSelectedFoods = selectedFoods.slice(
-      (selectedListPage - 1) * ITEMS_PER_PAGE,
-      selectedListPage * ITEMS_PER_PAGE
-  );
-
-  // 부족한 행의 개수를 계산합니다.x
+  const currentFoodData = allFoodData.slice((foodListPage - 1) * ITEMS_PER_PAGE, foodListPage * ITEMS_PER_PAGE);
+  const currentSelectedFoods = selectedFoods.slice((selectedListPage - 1) * ITEMS_PER_PAGE, selectedListPage * ITEMS_PER_PAGE);
   const emptyFoodRows = ITEMS_PER_PAGE - currentFoodData.length;
   const emptySelectedRows = ITEMS_PER_PAGE - currentSelectedFoods.length;
 
   const handleAddFood = (food) => {
     const newFood = {
-      key: Date.now(), name: food.name, amount: '100g', carbs: '22.5g',
+      key: Date.now(), name: food.name, amount: '100g', carbs: '22.5g', // 실제 영양 정보 필요
       protein: '21.5g', fat: '22.5g', calories: `${food.calories}Kcal`,
     };
     setSelectedFoods([...selectedFoods, newFood]);
@@ -109,31 +95,23 @@ const PageCalculator = () => {
                   <tr><th>음식</th><th>칼로리</th></tr>
                   </thead>
                   <tbody>
-                  {/*  전체 데이터 대신 '잘라낸' 데이터(currentFoodData)를 사용 */}
+                  {/* ⭐️ dataSource를 currentFoodData (state)로 변경 */}
                   {currentFoodData.map(food => (
                       <tr key={food.key} onClick={() => handleAddFood(food)}>
                         <td>{food.name}</td>
                         <td>{food.calories}</td>
                       </tr>
                   ))}
-                  {/*  부족한 만큼 '투명한 빈 행'을 추가합니다. */}
                   {emptyFoodRows > 0 && Array.from({ length: emptyFoodRows }).map((_, index) => (
-                      <tr key={`empty-${index}`} className="empty-row">
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                      </tr>
+                      <tr key={`empty-${index}`} className="empty-row"><td>&nbsp;</td><td>&nbsp;</td></tr>
                   ))}
                   </tbody>
                 </table>
-                {/* ⭐️ 5. 기존의 '...' div를 우리가 만든 Pagination 컴포넌트로 교체 */}
-                <Pagination
-                    currentPage={foodListPage}
-                    totalPages={totalFoodPages}
-                    onPageChange={setFoodListPage}
-                />
+                <Pagination currentPage={foodListPage} totalPages={totalFoodPages} onPageChange={setFoodListPage} />
               </div>
             </div>
           </div>
+          {/* ... (선택 리스트 부분은 동일하게 currentSelectedFoods 사용) ... */}
           <div className="col col-lg-12">
             <div className="card">
               <div className="card-title">선택 리스트</div>
@@ -153,7 +131,6 @@ const PageCalculator = () => {
                         <td><CloseCircleOutlined className="delete-icon" onClick={() => handleDeleteFood(food.key)} /></td>
                       </tr>
                   ))}
-                  {/*  선택 리스트 테이블에도 똑같이 적용합니다. */}
                   {emptySelectedRows > 0 && Array.from({ length: emptySelectedRows }).map((_, index) => (
                       <tr key={`empty-selected-${index}`} className="empty-row">
                         <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
@@ -172,7 +149,7 @@ const PageCalculator = () => {
           </div>
         </div>
 
-        {/* --- 중간/하단 영역: 동일한 방식으로 div로 대체 --- */}
+        {/* --- 중간/하단 영역 --- */}
         <div className="row" style={{ marginTop: '24px', rowGap: '16px' }}>
           <div className="col col-sm-8">
             <div className="card statistic-card"><div className="card-body">
