@@ -25,6 +25,7 @@ export default function App() {
             <Route path="/component" element={<ComponentView/>} />
             <Route path="/mypage" element={<PageMypage />} />
             <Route path="/admin" element={<PageAdmin/>}> 
+              <Route index element={<AdminUser />} />
               <Route path="users" element={<AdminUser/>}/>
               <Route path="classes" element={<AdminClass/>}/>
             </Route>
