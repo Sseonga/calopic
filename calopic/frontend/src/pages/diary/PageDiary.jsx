@@ -100,6 +100,7 @@ const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
   };
 
   const menuItems = [
+      { key: '0.5', label: '100ml' },
     { key: '0.2', label: '200ml' },
     { key: '0.5', label: '500ml' },
     { type: 'divider' },

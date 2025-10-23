@@ -7,10 +7,10 @@ import moment from 'moment';
 
 const FOOD_SEARCH_API_URL = '/api/foods/search';
 
-// 🚨 [변경] initialActiveTab prop을 추가하고 기본값을 'breakfast'로 설정합니다.
+//   initialActiveTab prop을 추가하고 기본값을 'breakfast'로 설정합니다.
 const RecordModal = ({ isVisible, onClose, selectedDate, dateKeyString, onSave, mealRecords, initialActiveTab = 'breakfast' }) => {
 
-  // 🚨 [변경] activeTab 상태를 initialActiveTab prop과 동기화하기 위해 useState의 초기값을 initialActiveTab으로 설정합니다.
+  // activeTab 상태를 initialActiveTab prop과 동기화하기 위해 useState의 초기값을 initialActiveTab으로 설정합니다.
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   const [uploadedImage, setUploadedImage] = useState(null);
 
