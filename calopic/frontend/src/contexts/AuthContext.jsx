@@ -5,7 +5,9 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const stored = sessionStorage.getItem("user");
+        
         if(!stored || stored === "undefined") return null;
+        
         try{
             return JSON.parse(stored);
         } catch(error) {
@@ -16,6 +18,7 @@ export const AuthProvider = ({ children }) => {
 
     const handleSetUser = (data) => {
         setUser(data);
+        
         if(data) {
             sessionStorage.setItem("user", JSON.stringify(data))
         } else {

@@ -12,8 +12,8 @@ const PageLogin = () =>{
     const { setUser } = useAuth();
     //  로그인 입력 정보 상태로 관리(아이디, 비밀번호)
     const [formData, setFormData] = useState({
-        userId:'',
-        userPassword:'',
+        userId:"",
+        userPwd:"",
     });
 
     const [errorMsg, setErrorMsg] = useState("");
@@ -34,28 +34,34 @@ const PageLogin = () =>{
         
         if(loading) return;
         
+        if(!formData.userId.trim() || !formData.userPwd.trim()) {
+            setErrorMsg("아이디와 비밀번호를 모두 입력해주세요.");
+            return;
+        }
+
         try{
             setLoading(true);
 
-            const payload = new FormData();
-            payload.append("userId", formData.userEmail);
-            payload.append("userPassword", formData.userPassword);
+            const body = {
+                userId: formData.userId,
+                userPassword: formData.userPwd,
+            };
 
-            const response = await postLogin(payload);
+            const response = await postLogin(body);
 
-            if(response.data.success) {
-                const loginUser = response.data.user;
+            const { data } = response || {};
+            const success = data?.success ?? data?.result ?? false;
+            const loginUser = data?.user ?? data?.data?.user ?? null
+
+            if(success && loginUser) {
                 setUser(loginUser);
-                alert("로그인 성공");
                 navigate("/");
             } else {
                 setErrorMsg(response.data.message || "로그인 실패");
             }
         } catch(error) {
             console.error("로그인 오류:", error);
-            setErrorMsg(
-                error?.response?.data?.message || error?.message || "서버와의 통신 중 오류가 발생했습니다."
-            );
+            setErrorMsg(error.userMessage);
         } finally {
             setLoading(false);
         }
@@ -75,7 +81,7 @@ const PageLogin = () =>{
                 </div>
 
                 <form className="login-form" onSubmit={handleSubmit}>
-                    <label className="input-label" htmlFor="text">아이디</label>
+                    <label className="input-label" htmlFor="userId">아이디</label>
                     <input
                         type="text"
                         id="userId"
@@ -88,14 +94,14 @@ const PageLogin = () =>{
                         required
                     />
 
-                    <label className="input-label" htmlFor="password">비밀번호</label>
+                    <label className="input-label" htmlFor="userPassword">비밀번호</label>
                     <input 
                         type="password"
                         id="userPassword"
                         name="userPassword"
                         placeholder="비밀번호를 입력하세요."
                         className="input-field"
-                        value={formData.userPassword}
+                        value={formData.userPwd}
                         onChange={handleChange}
                         autoComplete="current-password"
                         required
@@ -111,12 +117,11 @@ const PageLogin = () =>{
                 </form>
 
                 <div className="helper-row">
-                    <span className="muted">비밀번호를 잊으셨나요?</span>
-                    <Link to="/findPassword" className="link">비밀번호 찾기</Link>
+                    <Link to="/resetPwd" className="link">비밀번호를 잊으셨나요?</Link>
                 </div>
                 <div className="helper-row">
                     <span className="muted">아직 계정이 없으신가요?</span>
-                    <Link to="/signIn" className="link strong">회원가입</Link>
+                    <Link to="/join" className="link strong">회원가입</Link>
                 </div>
             </div>
         </div>
