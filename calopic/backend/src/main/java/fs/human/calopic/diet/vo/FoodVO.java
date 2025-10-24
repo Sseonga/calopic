@@ -7,4 +7,9 @@ public class FoodVO {
     private String foodCode;
     private String foodName;
     private double foodKcal; // double 타입인 경우 (DB 스키마에 따라 Integer일 수도 있음)
+
+    private double foodCarbo;   // FOOD_CARBO
+    private double foodProtein; // FOOD_PROTEIN
+    private double foodFat;     // FOOD_FAT
+
 }

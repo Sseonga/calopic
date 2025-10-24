@@ -7,15 +7,21 @@
         <id property="foodCode" column="FOOD_ID" />
         <result property="foodName" column="FOOD_NAME" />
         <result property="foodKcal" column="FOOD_KCAL" />
+
+        <result property="foodCarbo" column="FOOD_CARBO" />
+        <result property="foodProtein" column="FOOD_PROTEIN" />
+        <result property="foodFat" column="FOOD_FAT" />
     </resultMap>
 
     <select id="searchFoodsByName" resultMap="foodResultMap" parameterType="string">
         SELECT
-        FOOD_ID,        FOOD_NAME,
-        FOOD_KCAL
-        FROM
+        FOOD_ID,
+        FOOD_NAME,
+        FOOD_KCAL,
+        FOOD_CARBO,     FOOD_PROTEIN,   FOOD_FAT        FROM
         TB_FOOD
         WHERE
-        FOOD_NAME LIKE '%' || #{query} || '%'  ORDER BY FOOD_NAME
+        FOOD_NAME LIKE '%' || #{query} || '%'
+        ORDER BY FOOD_NAME
     </select>
 </mapper>
