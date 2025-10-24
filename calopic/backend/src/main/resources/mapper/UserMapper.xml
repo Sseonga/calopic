@@ -33,15 +33,15 @@
     </select>
 
     <!-- PK는 TRIGGER(TRG_TB_USER_BI)에서 채움 -->
-    <insert id="insertUser" parameterType="fs.human.calopic.user.vo.UserVO" useGeneratedKeys="false">
+    <insert id="insertUser">
         INSERT INTO TB_USER (
         USER_NAME, USER_PASSWORD, IS_ADMIN,
         USER_QUESTION, USER_ANSWER,
-        CREATED_DATE, CREATED_ID, UPDATED_DATE, UPDATED_ID
+        CREATED_DATE, UPDATED_DATE
         ) VALUES (
         #{userName}, #{userPassword}, #{isAdmin},
         #{userQuestion}, #{userAnswer},
-        SYSDATE, #{createdId}, SYSDATE, #{updatedId}
+        SYSDATE, SYSDATE
         )
     </insert>
 
