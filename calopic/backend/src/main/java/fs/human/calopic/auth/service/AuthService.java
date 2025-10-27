@@ -1,6 +1,6 @@
-// src/main/java/fs/human/calopic/auth/service/AuthService.java
 package fs.human.calopic.auth.service;
 
+import java.text.Normalizer;
 import fs.human.calopic.user.dao.UserDAO;
 import fs.human.calopic.user.vo.UserVO;
 import lombok.RequiredArgsConstructor;
@@ -55,30 +55,36 @@ public class AuthService {
         return found;
     }
 
+    // 공백/정규화 보정
+    private String norm(String s) {
+        if (s == null) return "";
+        String t = s.strip().replaceAll("\\s+", " ");
+        return java.text.Normalizer.normalize(t, java.text.Normalizer.Form.NFC);
+    }
+
     /** ① 보안질문/답변 검증 */
     public boolean verifyQA(String userName, String question, String answer) {
-        UserVO found = userDAO.findByUserName(userName);
+        UserVO found = userDAO.findByUserNameLinguistic(userName);
         if (found == null) return false;
 
         // 비교 정책: 질문코드/답변 모두 트림 후 대소문자 구분 없이 비교 (필요 시 변경)
-        String q = found.getUserQuestion() == null ? "" : found.getUserQuestion().trim();
-        String a = found.getUserAnswer()   == null ? "" : found.getUserAnswer().trim();
-
-        String rq = question == null ? "" : question.trim();
-        String ra = answer   == null ? "" : answer.trim();
-
+        String q  = norm(found.getUserQuestion());
+        String a  = norm(found.getUserAnswer());
+        String rq = norm(question);
+        String ra = norm(answer);
+        
         return q.equalsIgnoreCase(rq) && a.equalsIgnoreCase(ra);
     }
 
     /** ② 비밀번호 변경 */
     @Transactional
     public void changePassword(String userName, String newRawPwd) {
-        UserVO found = userDAO.findByUserName(userName);
+        UserVO found = userDAO.findByUserNameLinguistic(userName);
         if (found == null) {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
         String hashed = encoder.encode(newRawPwd);
-        int updated = userDAO.updatePasswordByUserName(userName, hashed);
+        int updated = userDAO.updatePasswordByUserName(found.getUserName(), hashed);
         if (updated != 1) {
             throw new IllegalStateException("비밀번호 변경에 실패했습니다.");
         }

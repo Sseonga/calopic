@@ -23,13 +23,13 @@
         WHERE USER_NAME = #{userName}
     </select>
 
-    <select id="findByUserName" resultMap="UserMap">
-        SELECT
-        USER_ID, USER_NAME, USER_PASSWORD, IS_ADMIN,
-        USER_QUESTION, USER_ANSWER,
-        CREATED_DATE, CREATED_ID, UPDATED_DATE, UPDATED_ID
+    <!-- 악센트/정규화 차이 무시 + 대소문자 무시 -->
+    <select id="findByUserNameLinguistic" resultMap="UserMap">
+        SELECT  USER_ID, USER_NAME, USER_PASSWORD, IS_ADMIN,
+                USER_QUESTION, USER_ANSWER,
+                CREATED_DATE, CREATED_ID, UPDATED_DATE, UPDATED_ID
         FROM TB_USER
-        WHERE USER_NAME = #{userName}
+        WHERE NLSSORT(USER_NAME, 'NLS_SORT=BINARY_AI') = NLSSORT(#{userName}, 'NLS_SORT=BINARY_AI')
     </select>
 
     <!-- PK는 TRIGGER(TRG_TB_USER_BI)에서 채움 -->

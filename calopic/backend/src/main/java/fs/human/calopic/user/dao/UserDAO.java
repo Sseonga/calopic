@@ -10,6 +10,8 @@ public interface UserDAO {
     int existsByUserName(@Param("userName") String userName);
     UserVO findByUserName(@Param("userName") String userName);
     void insertUser(UserVO user);
+    // 대소문자/악센트 무시 조회
+    UserVO findByUserNameLinguistic(@org.apache.ibatis.annotations.Param("userName") String userName);
 
     // 가입 직후 USER_INFO 빈 줄 생성
     int insertUserInfoBlank(@Param("userId") Long userId);

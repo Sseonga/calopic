@@ -62,12 +62,12 @@ const PagePasswordReset = () => {
         try {
             setSubmitting(true);
 
-            const { data } = await postVerifyQA({
+            const response = await postVerifyQA({
                 userId: formData.userId.trim(),
                 question: formData.question,
                 answer: formData.answer.trim(),
             });
-
+            const data = response?.data ?? response;
             const success = data?.success ?? data?.result ?? false;
             const message =
                 data?.message ?? 
@@ -95,10 +95,11 @@ const PagePasswordReset = () => {
         if(!canChange) return;
         try{
             setSubmitting(true);
-            const { data } = await postChangePassword({
+            const response = await postChangePassword({
                 userId: formData.userId.trim(),
                 newPwd: formData.newPwd,
             });
+            const data = response?.data ?? response;
             const success = data?.success ?? data?.result ?? false;
             const message = 
                 data?.message ??

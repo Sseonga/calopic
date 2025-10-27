@@ -21,7 +21,7 @@ export default function App() {
         <Routes>
           <Route path='/login' element={<PageLogin />} />
           <Route path='/join' element={<PageJoin />} />
-          <Route path='/password-reset' element={<PagePasswordReset />} />
+          <Route path='/reset-password' element={<PagePasswordReset />} />
           <Route element={<LayoutShell />}>
             <Route index element={<PageUpload />} />
             <Route path="/diary" element={<PageDiary />} />

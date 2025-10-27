@@ -59,6 +59,7 @@ public class AuthController {
             HttpSession session
     ) {
         boolean ok = authService.verifyQA(req.userId(), req.question(), req.answer());
+
         if (!ok) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
