@@ -29,13 +29,27 @@ export default function CustomModal1({
   closable = true,
   width = 520,
   style,
+  maskClosable =  true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const showModal = () => setIsOpen(true);
-  const handleOk = () => {
-    onOk && onOk();
-    setIsOpen(false);
+
+  const handleOk = async () => {
+    if (!onOk) {
+      setIsOpen(false);
+      return;
+    }
+    try {
+      setConfirmLoading(true);
+      const shouldClose = await onOk(); // true면 닫기
+      if (shouldClose) setIsOpen(false);
+    } catch (e) {
+      // 검증 실패나 예외 → 닫지 않음
+    } finally {
+      setConfirmLoading(false);
+    }
   };
   const handleCancel = () => {
     onCancel && onCancel();
@@ -65,6 +79,9 @@ export default function CustomModal1({
         cancelText={cancelText}
         closable={closable}
         width={width}
+        maskClosable={maskClosable}
+        confirmLoading={confirmLoading}
+        destroyOnClose
       >
         {/* children으로 외부 내용 표시 */}
         {children}
