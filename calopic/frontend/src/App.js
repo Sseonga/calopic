@@ -10,6 +10,7 @@ import AdminUser from './components/admin/AdminUser';
 import ComponentView from './pages/ComponentView';
 import PageLogin from './pages/auth/PageLogin';
 import PageJoin from './pages/auth/PageJoin';
+import PagePasswordReset from './pages/auth/PagePasswordReset';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
@@ -20,6 +21,7 @@ export default function App() {
         <Routes>
           <Route path='/login' element={<PageLogin />} />
           <Route path='/join' element={<PageJoin />} />
+          <Route path='/password-reset' element={<PagePasswordReset />} />
           <Route element={<LayoutShell />}>
             <Route index element={<PageUpload />} />
             <Route path="/diary" element={<PageDiary />} />

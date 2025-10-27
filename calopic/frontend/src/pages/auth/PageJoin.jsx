@@ -211,7 +211,7 @@ const PageJoin = () => {
                         type="text"
                         id="answer"
                         name="answer"
-                        placeholder="답변을 입력하세요."
+                        placeholder="답변을 입력해주세요."
                         className="join-input-field"
                         value={formData.answer}
                         onChange={handleChange}

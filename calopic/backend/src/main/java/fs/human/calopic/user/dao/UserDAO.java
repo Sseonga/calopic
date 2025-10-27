@@ -1,13 +1,17 @@
 // src/main/java/fs/human/calopic/user/dao/UserDAO.java
 package fs.human.calopic.user.dao;
 
-import fs.human.calopic.user.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import fs.human.calopic.user.vo.UserVO;
 
 @Mapper
 public interface UserDAO {
-    int existsByUserName(@Param("userName") String userName); // 0 or 1
+    int existsByUserName(@Param("userName") String userName);
     UserVO findByUserName(@Param("userName") String userName);
-    int insertUser(UserVO user); // TRIGGER로 PK 자동 세팅
+    void insertUser(UserVO user);
+
+    // ★ 추가: 비밀번호 변경
+    int updatePasswordByUserName(@Param("userName") String userName,
+                                 @Param("hashedPwd") String hashedPwd);
 }

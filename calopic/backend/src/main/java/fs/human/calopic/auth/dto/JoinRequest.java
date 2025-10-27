@@ -1,13 +1,20 @@
-// src/main/java/fs/human/calopic/auth/dto/JoinRequest.java
 package fs.human.calopic.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
+import jakarta.validation.constraints.Size;
 
-@Getter
-public class JoinRequest {
-    @NotBlank private String userId;   // = USER_NAME
-    @NotBlank private String userPwd;  // 원문 비밀번호
-    @NotBlank private String question; // = USER_QUESTION (코드값)
-    @NotBlank private String answer;   // = USER_ANSWER
-}
+public record JoinRequest(
+        @NotBlank(message = "아이디는 필수입니다.")
+        @Size(min = 4, max = 32, message = "아이디는 4~32자로 입력해 주세요.")
+        String userId,
+
+        @NotBlank(message = "비밀번호는 필수입니다.")
+        @Size(min = 8, max = 64, message = "비밀번호는 8~64자로 입력해 주세요.")
+        String userPwd,
+
+        @NotBlank(message = "보안질문은 필수입니다.")
+        String question,
+
+        @NotBlank(message = "보안답변은 필수입니다.")
+        String answer
+) {}

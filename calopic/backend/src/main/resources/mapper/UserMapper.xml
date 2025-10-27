@@ -45,4 +45,11 @@
         )
     </insert>
 
+    <update id="updatePasswordByUserName">
+        UPDATE TB_USER
+        SET USER_PASSWORD = #{hashedPwd},
+        UPDATED_DATE  = SYSDATE
+        WHERE USER_NAME   = #{userName}
+    </update>
+
 </mapper>

@@ -24,3 +24,5 @@ export const postLogin = (body) => api.post("/auth/login", body);
 export const postLogout = () => api.post("/auth/logout");
 export const checkDuplicateId = (userId) => api.get("/auth/check-id", { params: { userId }});
 export const postJoin = (body) => api.post("/auth/join", body).then(r => r.data);
+export const postVerifyQA = (body) => api.post("/auth/reset-password/verify",body).then(r => r.data)
+export const postChangePassword = (body) => api.post("/auth/reset-password/change",body).then(r => r.data)
