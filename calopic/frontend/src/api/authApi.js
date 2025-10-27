@@ -23,4 +23,4 @@ api.interceptors.response.use(
 export const postLogin = (body) => api.post("/auth/login", body);
 export const postLogout = () => api.post("/auth/logout");
 export const checkDuplicateId = (userId) => api.get("/auth/check-id", { params: { userId }});
-export const postJoin = (body) => api.post("/auth/join", body);
+export const postJoin = (body) => api.post("/auth/join", body).then(r => r.data);

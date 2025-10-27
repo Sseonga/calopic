@@ -31,11 +31,16 @@ public class AuthService {
                 .userQuestion(question)
                 .userAnswer(answer)
                 .build();
+
         userDAO.insertUser(user);
-        // DB 트리거로 USER_ID가 부여됨. 조회가 필요하면 아래 한 줄로 재조회 가능:
-        // user = userMapper.findByUserName(userName);
-        user.setUserPassword(null);
-        return user;
+
+        UserVO saved = userDAO.findByUserName(userName);
+        if (saved == null) {
+            // 방어 로직
+            throw new IllegalStateException("회원가입 후 사용자 조회에 실패했습니다.");
+        }
+        saved.setUserPassword(null);
+        return saved;
     }
 
     public UserVO login(String userName, String rawPwd) {

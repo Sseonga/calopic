@@ -98,7 +98,7 @@ const PageLogin = () =>{
                     <input 
                         type="password"
                         id="userPassword"
-                        name="userPassword"
+                        name="userPwd"
                         placeholder="비밀번호를 입력하세요."
                         className="input-field"
                         value={formData.userPwd}

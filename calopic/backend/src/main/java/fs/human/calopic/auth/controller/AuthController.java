@@ -35,11 +35,13 @@ public class AuthController {
     @PostMapping("/join")
     public ResponseEntity<Map<String, Object>> join(@Valid @RequestBody JoinRequest req) {
         UserVO user = authService.join(req.getUserId(), req.getUserPwd(), req.getQuestion(), req.getAnswer());
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "회원가입이 완료되었습니다.",
-                "user", toResponse(user)
-        ));
+
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("success", true);
+        body.put("message", "회원가입이 완료되었습니다.");
+        body.put("user", toResponse(user)); // user 필드 중 일부가 null이어도 OK
+
+        return ResponseEntity.ok(body);
     }
 
     // 로그인: { userId, userPassword }
