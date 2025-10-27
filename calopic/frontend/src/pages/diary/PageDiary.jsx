@@ -8,7 +8,7 @@ import './DiaryPage.css';
 import RecordModal from './RecordModal';
 
 // =========================================================
-// 🚨 [수정] INITIAL_DAILY_RECORD로 변경하고 waterIntake 추가
+//  상수 정의
 // =========================================================
 const INITIAL_MEAL_RECORDS = {
     breakfast: { items: [], calorie: 0, image: null },
@@ -18,11 +18,11 @@ const INITIAL_MEAL_RECORDS = {
 
 const INITIAL_DAILY_RECORD = {
     ...INITIAL_MEAL_RECORDS,
-    waterIntake: 0.0, // 👈 수분 섭취량 초기값 (날짜별 관리를 위함)
+    waterIntake: 0.0, // 수분 섭취량 초기값
 };
 
 // =========================================================
-//  A. 캘린더 기능을 담당하는 컴포넌트 (DateSelect) 🚨 [최종 수정] picker="date" 추가
+//  A. 캘린더 기능을 담당하는 컴포넌트 (DateSelect)
 // =========================================================
 const DateSelect = ({ value, onChange, allRecords }) => {
     const displayFormat = 'MM월 DD일';
@@ -54,7 +54,6 @@ const DateSelect = ({ value, onChange, allRecords }) => {
             variant="borderless"
             classNames={{ popup: 'date-picker-dropdown' }}
             inputReadOnly={true}
-            // 🚨 [핵심 수정] picker="date"를 명시하여 날짜 선택 모드를 강제합니다.
             picker="date"
             dateRender={dateRender}
         />
@@ -62,7 +61,7 @@ const DateSelect = ({ value, onChange, allRecords }) => {
 };
 
 // =========================================================
-//  B. 수분 섭취량 컴포넌트 (WaterIntakeControl) - Props 기반
+//  B. 수분 섭취량 컴포넌트 (WaterIntakeControl)
 // =========================================================
 const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,6 +81,7 @@ const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
       setInputValue(intake);
       return;
     }
+    // 섭취량 추가 시 기존 섭취량 + 추가량
     onIntakeChange(intake + parseFloat(value));
     setIsInputMode(false);
   };
@@ -100,7 +100,7 @@ const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
   };
 
   const menuItems = [
-      { key: '0.5', label: '100ml' },
+    { key: '0.1', label: '100ml' },
     { key: '0.2', label: '200ml' },
     { key: '0.5', label: '500ml' },
     { type: 'divider' },
@@ -157,34 +157,44 @@ const WaterIntakeControl = ({ goal = 2.0, intake, onIntakeChange }) => {
 export default function PageDiary() {
     // 1. 상태 관리
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(moment('2025-10-23'));
+    // 🚨 [수정]: selectedDate 초기값을 오늘 날짜로 설정 (23일 대신)
+    const [selectedDate, setSelectedDate] = useState(moment());
     const [selectedMealType, setSelectedMealType] = useState('breakfast');
 
-    // 🚨 1-1. 전체 기록 상태: 로컬 스토리지에서 전체 기록을 불러와 초기 상태 설정
+    // 1-1. 전체 기록 상태: 로컬 스토리지에서 전체 기록을 불러와 초기 상태 설정
     const [allDailyRecords, setAllDailyRecords] = useState(() => {
         const savedRecords = localStorage.getItem('dailyMealRecords');
         const initialData = savedRecords ? JSON.parse(savedRecords) : {};
+
+        // 예시 데이터에 탄단지 정보 추가 (테스트용)
         if (Object.keys(initialData).length === 0) {
-            // 예시로 22일 기록을 추가 (2025-10-22)
             initialData['2025-10-22'] = {
-                ...INITIAL_DAILY_RECORD, //waterIntake 포함
-                breakfast: { items: [{foodCode: 'E001', foodName: '삶은 계란', foodKcal: 80}], calorie: 80, image: null },
-                lunch: { items: [{foodCode: 'C001', foodName: '닭가슴살 샐러드', foodKcal: 350}], calorie: 350, image: null },
+                ...INITIAL_DAILY_RECORD,
+                breakfast: {
+                    items: [{foodCode: 'E001', foodName: '삶은 계란', foodKcal: 80, foodCarbo: 1.0, foodProtein: 6.0, foodFat: 5.0}],
+                    calorie: 80,
+                    image: null
+                },
+                lunch: {
+                    items: [{foodCode: 'C001', foodName: '닭가슴살 샐러드', foodKcal: 350, foodCarbo: 10.0, foodProtein: 30.0, foodFat: 15.0}],
+                    calorie: 350,
+                    image: null
+                },
+                dinner: INITIAL_DAILY_RECORD.dinner
             };
         }
         return initialData;
     });
 
-    // 1-2. 로컬 저장소 동기화 (allDailyRecords가 변경될 때마다)
+    // 1-2. 로컬 저장소 동기화
     useEffect(() => {
         localStorage.setItem('dailyMealRecords', JSON.stringify(allDailyRecords));
     }, [allDailyRecords]);
 
-    // 🚨 1-3. 현재 선택된 날짜의 기록 계산 (currentDayRecord, mealRecords, waterIntake)
-    const dateKey = selectedDate.format('YYYY-MM-DD'); // YYYY-MM-DD 형식의 문자열 키
+    // 1-3. 현재 선택된 날짜의 기록 계산
+    const dateKey = selectedDate.format('YYYY-MM-DD');
 
     const currentDayRecord = useMemo(() => {
-        // 기존 기록에 waterIntake 등의 필드가 없을 경우 INITIAL_DAILY_RECORD로 보완
         return allDailyRecords[dateKey] ? { ...INITIAL_DAILY_RECORD, ...allDailyRecords[dateKey] } : INITIAL_DAILY_RECORD;
     }, [allDailyRecords, dateKey]);
 
@@ -198,8 +208,70 @@ export default function PageDiary() {
     // 수분 섭취량 추출
     const waterIntake = currentDayRecord.waterIntake;
 
+    // 🚨 1-4. 각 식사별 총 탄단지 합계 계산 로직 (이전 수정사항)
+    const mealMacros = useMemo(() => {
+        const calculateMacros = (items) => {
+            if (!items || items.length === 0) {
+                return { carbo: 0, protein: 0, fat: 0 };
+            }
+            return items.reduce((sums, item) => ({
+                carbo: sums.carbo + (item.foodCarbo || 0),
+                protein: sums.protein + (item.foodProtein || 0),
+                fat: sums.fat + (item.foodFat || 0),
+            }), { carbo: 0, protein: 0, fat: 0 });
+        };
 
-    // 2. 핸들러 함수
+        return {
+            breakfast: calculateMacros(mealRecords.breakfast.items),
+            lunch: calculateMacros(mealRecords.lunch.items),
+            dinner: calculateMacros(mealRecords.dinner.items),
+        };
+    }, [mealRecords]);
+
+
+    // 🚨 [핵심 수정] 2. 일일 총 탄단지 합계 및 비율 계산 로직
+    const dailyMacros = useMemo(() => {
+        const totalCarbo = (mealMacros.breakfast.carbo + mealMacros.lunch.carbo + mealMacros.dinner.carbo);
+        const totalProtein = (mealMacros.breakfast.protein + mealMacros.lunch.protein + mealMacros.dinner.protein);
+        const totalFat = (mealMacros.breakfast.fat + mealMacros.lunch.fat + mealMacros.dinner.fat);
+
+        // 탄단지 칼로리 계산 (탄:4, 단:4, 지:9 kcal/g)
+        const totalCarboCal = totalCarbo * 4;
+        const totalProteinCal = totalProtein * 4;
+        const totalFatCal = totalFat * 9;
+
+        const totalMacroCal = totalCarboCal + totalProteinCal + totalFatCal;
+
+        // 비율 계산 (0으로 나누는 오류 방지)
+        if (totalMacroCal === 0) {
+            return { carbo: 0, protein: 0, fat: 0, totalCal: 0 };
+        }
+
+        const carboPercent = (totalCarboCal / totalMacroCal) * 100;
+        const proteinPercent = (totalProteinCal / totalMacroCal) * 100;
+        const fatPercent = (totalFatCal / totalMacroCal) * 100;
+
+        // 합이 100%를 넘거나 부족할 수 있으므로, 보정하는 로직은 생략하고 계산된 값을 그대로 사용 (Progress bar가 알아서 처리)
+
+        return {
+            carbo: carboPercent,
+            protein: proteinPercent,
+            fat: fatPercent,
+            totalCal: totalMacroCal // 탄단지에서 나온 칼로리 합
+        };
+    }, [mealMacros]);
+
+
+    // 3. 일일 총 칼로리 합산 계산 (이미 구현됨)
+    const totalDailyCalorie = useMemo(() => {
+        return Object.values(mealRecords).reduce(
+            (sum, record) => sum + record.calorie,
+            0
+        );
+    }, [mealRecords]);
+
+
+    // 4. 핸들러 함수 (유지)
     const handleCloseModal = () => setIsModalVisible(false);
     const handleOpenModalForAdd = () => {
         setSelectedMealType('breakfast');
@@ -210,14 +282,12 @@ export default function PageDiary() {
         setIsModalVisible(true);
     };
 
-    // 2-1. 날짜 변경 핸들러
     const handleDateChange = (date) => {
         if (date) {
             setSelectedDate(date);
         }
     };
 
-    // 2-2. 식단 기록 저장 핸들러
     const handleSaveRecord = (mealType, recordData) => {
         setAllDailyRecords((prevAllRecords) => {
             const currentDayRecords = prevAllRecords[dateKey] || INITIAL_DAILY_RECORD;
@@ -239,12 +309,10 @@ export default function PageDiary() {
         handleCloseModal();
     };
 
-    // 🚨 2-3. 수분 섭취량 변경 핸들러
     const handleWaterIntakeChange = (newIntake) => {
         setAllDailyRecords((prevAllRecords) => {
             const currentDayRecords = prevAllRecords[dateKey] || INITIAL_DAILY_RECORD;
 
-            // 0.0 미만으로 내려가지 않도록 처리
             const finalIntake = Math.max(0.0, newIntake);
 
             const newDayRecords = {
@@ -260,20 +328,13 @@ export default function PageDiary() {
     };
 
 
-    // 3. 일일 총 칼로리 합산 계산 (useMemo 사용)
-    const totalDailyCalorie = useMemo(() => {
-        return Object.values(mealRecords).reduce(
-            (sum, record) => sum + record.calorie,
-            0
-        );
-    }, [mealRecords]);
+    // 5. UI 표시용 매크로 데이터
+    const macroData = useMemo(() => [
+        { name: '탄수화물', percent: dailyMacros.carbo, color: '#D1C4E9' },
+        { name: '단백질', percent: dailyMacros.protein, color: '#B3E5BC' },
+        { name: '지방', percent: dailyMacros.fat, color: '#FFCDD2' },
+    ], [dailyMacros]);
 
-    // 4. 정적 데이터
-    const macroData = [
-        { name: '탄수화물', percent: 45, color: '#D1C4E9' },
-        { name: '단백질', percent: 35, color: '#B3E5BC' },
-        { name: '지방', percent: 20, color: '#FFCDD2' },
-    ];
 
     return (
         <div className="diary-page-container">
@@ -297,40 +358,50 @@ export default function PageDiary() {
                 {/* -------------------- Col 2: 식단 기록 리스트 영역 (span=14) -------------------- */}
                 <Col className="col-record-list" span={14}>
                     <div className="record-list">
-                        {Object.entries(mealRecords).map(([mealType, record]) => (
-                            <div
-                                key={mealType}
-                                className="record-card"
-                                onClick={() => handleCardClickForEdit(mealType)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <div className="card-image-box">
-                                    <img
-                                        src={record.image || `/path/to/default_${mealType}_image.jpg`}
-                                        alt={`${mealType} 식단 이미지`}
-                                    />
+                        {Object.entries(mealRecords).map(([mealType, record]) => {
+                            const macros = mealMacros[mealType];
+
+                            return (
+                                <div
+                                    key={mealType}
+                                    className="record-card"
+                                    onClick={() => handleCardClickForEdit(mealType)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className="card-image-box">
+                                        <img
+                                            src={record.image || `/path/to/default_${mealType}_image.jpg`}
+                                            alt={`${mealType} 식단 이미지`}
+                                        />
+                                    </div>
+                                    <div className="card-details">
+                                        <h4 className="meal-time">
+                                            {mealType === 'breakfast' ? '아침' : mealType === 'lunch' ? '점심' : '저녁'}
+                                        </h4>
+                                        <ul className="food-list">
+                                            {record.items.map((item, index) => (
+                                                <li key={item.foodCode || index}>
+                                                    {item.foodName} ({item.foodKcal}kcal)
+                                                </li>
+                                            ))}
+                                            {record.items.length === 0 && <li className="no-record-text">기록된 음식이 없습니다.</li>}
+                                        </ul>
+                                    </div>
+                                    <div className="card-summary">
+                                        <p className="total-text">
+                                            합계 <span className="check-icon">☑️</span>
+                                        </p>
+                                        <p className="total-calorie">{record.calorie}kcal</p>
+
+                                        {/* 식단 카드 탄단지 표시 */}
+                                        <p className="total-macros" style={{fontSize: '11px', color: '#777', marginTop: '5px'}}>
+                                            T: {macros.carbo.toFixed(1)}g | P: {macros.protein.toFixed(1)}g | F: {macros.fat.toFixed(1)}g
+                                        </p>
+
+                                    </div>
                                 </div>
-                                <div className="card-details">
-                                    <h4 className="meal-time">
-                                        {mealType === 'breakfast' ? '아침' : mealType === 'lunch' ? '점심' : '저녁'}
-                                    </h4>
-                                    <ul className="food-list">
-                                        {record.items.map((item, index) => (
-                                            <li key={item.foodCode || index}>
-                                                {item.foodName} ({item.foodKcal}kcal)
-                                            </li>
-                                        ))}
-                                        {record.items.length === 0 && <li className="no-record-text">기록된 음식이 없습니다.</li>}
-                                    </ul>
-                                </div>
-                                <div className="card-summary">
-                                    <p className="total-text">
-                                        합계 <span className="check-icon">☑️</span>
-                                    </p>
-                                    <p className="total-calorie">{record.calorie}kcal</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </Col>
 
@@ -345,14 +416,15 @@ export default function PageDiary() {
                             </div>
                         </div>
 
-                        {/* 탄단지 비율 영역 */}
+                        {/* 🚨 [핵심 수정] 탄단지 비율 영역 - 실제 데이터 비율 사용 */}
                         <div className="section-macro-ratio">
                             <h4 className="section-title">탄단지 비율</h4>
                             <div className="macro-bars">
                                 {macroData.map((macro) => (
                                     <div key={macro.name} className="macro-item">
-                                        <span className="macro-name">{macro.name}</span>
+                                        <span className="macro-name">{macro.name} ({macro.percent.toFixed(0)}%)</span> {/* 비율 표시 추가 */}
                                         <Progress
+                                            // 🚨 [수정] 계산된 비율을 적용
                                             percent={macro.percent}
                                             strokeColor={macro.color}
                                             showInfo={false}
@@ -361,6 +433,12 @@ export default function PageDiary() {
                                         />
                                     </div>
                                 ))}
+                                {/* 탄단지 합계가 0일 때 안내 */}
+                                {dailyMacros.totalCal === 0 && (
+                                    <p style={{marginTop: '10px', fontSize: '12px', color: '#999'}}>
+                                        *탄단지 정보가 있는 음식이 없습니다.
+                                    </p>
+                                )}
                             </div>
                         </div>
 

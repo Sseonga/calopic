@@ -7,14 +7,12 @@ import moment from 'moment';
 
 const FOOD_SEARCH_API_URL = '/api/foods/search';
 
-//   initialActiveTab prop을 추가하고 기본값을 'breakfast'로 설정합니다.
 const RecordModal = ({ isVisible, onClose, selectedDate, dateKeyString, onSave, mealRecords, initialActiveTab = 'breakfast' }) => {
 
-  // activeTab 상태를 initialActiveTab prop과 동기화하기 위해 useState의 초기값을 initialActiveTab으로 설정합니다.
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   const [uploadedImage, setUploadedImage] = useState(null);
 
-  // 1. 선택된 음식 목록
+  // 1. 선택된 음식 목록 (탄단지 정보 포함)
   const [selectedFoodList, setSelectedFoodList] = useState([]);
 
   // 2. 검색 관련 상태 추가
@@ -23,7 +21,7 @@ const RecordModal = ({ isVisible, onClose, selectedDate, dateKeyString, onSave, 
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-// 🚨 [추가] initialActiveTab prop이 변경될 때마다 activeTab 상태를 동기화하여 탭을 전환합니다. (카드 클릭 시)
+// initialActiveTab prop이 변경될 때마다 activeTab 상태를 동기화합니다.
 useEffect(() => {
     if (initialActiveTab) {
         setActiveTab(initialActiveTab);
@@ -37,10 +35,15 @@ useEffect(() => {
       const currentItems = mealRecords[activeTab].items || [];
       const currentImage = mealRecords[activeTab].image || null;
 
+      // 🚨 [수정]: 기존 기록 로드 시 탄단지 정보 (foodCarbo, foodProtein, foodFat) 추가
       const initialSelected = currentItems.map(item => ({
         foodCode: item.foodCode,
         foodName: item.foodName,
         foodKcal: item.foodKcal,
+        foodCarbo: item.foodCarbo || 0,
+        foodProtein: item.foodProtein || 0,
+        foodFat: item.foodFat || 0,
+
         id: item.foodCode,
         name: item.foodName,
         calorie: item.foodKcal,
@@ -58,23 +61,32 @@ useEffect(() => {
     setSearchedFoods([]);
     setIsSearching(false);
 
-    // 🚨 [변경] 의존성 배열에 initialActiveTab을 추가합니다.
   }, [isVisible, activeTab, mealRecords, dateKeyString, initialActiveTab])
 
 
-  // 임시: 현재 표시할 음식 목록 (검색 중이면 검색 결과를, 아니면 선택된 목록을 표시)
+  // 현재 표시할 음식 목록: 검색 중이면 검색 결과를, 아니면 선택된 목록을 표시 (탄단지 포함)
   const displayFoodList = useMemo(() => {
     if (isSearching) {
       // 검색 중이면, searchedFoods에 selectedFoodList의 체크 상태를 병합하여 보여줍니다.
       return searchedFoods.map(searchItem => {
           // foodCode가 일치하는 항목이 selectedFoodList에 있는지 확인하여 체크 상태 결정
           const isChecked = selectedFoodList.some(selectedItem => selectedItem.foodCode === searchItem.id);
+          // searchItem에는 이미 foodCarbo 등이 handleSearch에서 저장됨
           return { ...searchItem, checked: isChecked };
       });
     }
     // 검색 중이 아니면, 현재 선택된 음식 목록만 보여줍니다.
-    // 검색 모드가 아닐 때는 selectedFoodList의 모든 항목을 체크된 상태로 보여줍니다.
-    return selectedFoodList.map(item => ({...item, checked: true, id: item.foodCode, name: item.foodName, calorie: item.foodKcal}));
+    return selectedFoodList.map(item => ({
+        ...item,
+        checked: true,
+        id: item.foodCode,
+        name: item.foodName,
+        calorie: item.foodKcal,
+        // 🚨 [추가]: 선택된 목록의 탄단지 정보 포함
+        foodCarbo: item.foodCarbo,
+        foodProtein: item.foodProtein,
+        foodFat: item.foodFat
+    }));
   }, [isSearching, searchedFoods, selectedFoodList]);
 
 
@@ -108,17 +120,21 @@ useEffect(() => {
 
       const data = await response.json();
 
-      // DB 응답 형식에 맞춰 데이터 가공 및 저장
-      const formattedFoods = data.map(food => ({
-        // DTO 필드명 저장
-        foodCode: food.foodCode,
-        foodName: food.foodName,
-        foodKcal: food.foodKcal || 0,
-        // UI 표시용 필드 저장
-        id: food.foodCode,
-        name: food.foodName,
-        calorie: food.foodKcal || 0,
-      }));
+      // 🚨 [수정]: DB 응답 형식에 맞춰 데이터 가공 및 저장 (탄단지 필드 포함)
+    const formattedFoods = data.map(food => ({
+            // DTO/VO 필드명 저장
+            foodCode: food.foodCode,
+            foodName: food.foodName,
+            foodKcal: food.foodKcal || 0,
+            foodCarbo: food.foodCarbo || 0,
+            foodProtein: food.foodProtein || 0,
+            foodFat: food.foodFat || 0,
+
+            // UI 표시용 필드 저장
+            id: food.foodCode,
+            name: food.foodName,
+            calorie: food.foodKcal || 0,
+          }));
 
       setSearchedFoods(formattedFoods);
 
@@ -139,9 +155,18 @@ useEffect(() => {
    * 음식 목록에서 항목을 체크/체크 해제하는 함수
    */
   const handleCheck = (foodItem, isSelected) => {
-    const { id, name, calorie, foodCode, foodName, foodKcal } = foodItem;
-    // DTO 구조로 저장
-    const foodDtoLikeItem = { foodCode: foodCode || id, foodName: foodName || name, foodKcal: foodKcal || calorie };
+    // 🚨 [수정]: foodCarbo, foodProtein, foodFat 필드를 foodItem에서 구조분해 할당
+    const { id, name, calorie, foodCode, foodName, foodKcal, foodCarbo, foodProtein, foodFat } = foodItem;
+
+    // DTO 구조로 저장 (탄단지 포함)
+   const foodDtoLikeItem = {
+           foodCode: foodCode || id,
+           foodName: foodName || name,
+           foodKcal: foodKcal || calorie,
+           foodCarbo: foodCarbo || 0,
+           foodProtein: foodProtein || 0,
+           foodFat: foodFat || 0
+       };
 
     if (isSelected) {
       // 체크 해제: selectedFoodList에서 foodCode가 일치하는 항목 제거
@@ -180,7 +205,6 @@ useEffect(() => {
 
   // ------------------------- 기타 로직 -------------------------
 
-  // 🚨 [수정] 탭 변경 핸들러
   const handleTabChange = (key) => {
     setActiveTab(key);
   }
@@ -194,9 +218,6 @@ useEffect(() => {
 
     // 검색 결과 리스트의 체크 상태 업데이트 (즉시 반영을 위해)
     if (isSearching) {
-        // NOTE: 이 로직은 selectedFoodList의 이전 상태에 의존할 수 있으므로,
-        // 실제로는 삭제 후 남은 항목을 기준으로 체크 상태를 다시 계산하는 것이 더 안전합니다.
-        // 여기서는 임시로 간단한 업데이트를 유지합니다.
         setSearchedFoods(prev =>
             prev.map(food => ({
                 ...food,
@@ -224,8 +245,16 @@ useEffect(() => {
     [selectedFoodList]
   );
 
+  // 🚨 [추가]: 총 탄단지 합계 계산 (푸터에 표시할 용도)
+  const totalMacros = useMemo(() => ({
+    foodCarbo: selectedFoodList.reduce((sum, f) => sum + (f.foodCarbo || 0), 0),
+    foodProtein: selectedFoodList.reduce((sum, f) => sum + (f.foodProtein || 0), 0),
+    foodFat: selectedFoodList.reduce((sum, f) => sum + (f.foodFat || 0), 0),
+  }), [selectedFoodList]);
+
+
   const handleSave = () => {
-    const foodDtoItems = selectedFoodList;
+    const foodDtoItems = selectedFoodList; // selectedFoodList는 이제 탄단지 정보 포함
 
     const recordData = {
       image: uploadedImage,
@@ -437,9 +466,15 @@ const formattedDate = useMemo(() => {
                 const isSelected = item.checked;
 
                 return (
+                  // 🚨 [수정]: List.Item의 구조를 변경하여 탄단지 정보를 표시
                   <List.Item className="food-list-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px' }}>
-                    <span className="food-name" style={{ flexGrow: 1 }}>{item.name}</span>
-                    <span className="food-calorie" style={{ marginRight: '15px', color: '#555' }}>{item.calorie}kcal</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <span className="food-name" style={{ fontWeight: 'bold' }}>{item.name}</span>
+                        <span className="food-macros" style={{ fontSize: '12px', color: '#777' }}>
+                            탄수화물: {item.foodCarbo ? item.foodCarbo.toFixed(1) : '0.0'}g | 단백질: {item.foodProtein ? item.foodProtein.toFixed(1) : '0.0'}g | 지방: {item.foodFat ? item.foodFat.toFixed(1) : '0.0'}g
+                        </span>
+                    </div>
+                    <span className="food-calorie" style={{ marginRight: '15px', color: '#555', fontWeight: 'bold' }}>{item.calorie}kcal</span>
                     <Checkbox
                       // foodItem 전체 객체와 현재 체크 상태를 전달
                       checked={isSelected}
@@ -466,6 +501,10 @@ const formattedDate = useMemo(() => {
         >
           <div className="total-calorie-display" style={{ fontSize: '18px', fontWeight: 'bold' }}>
             합계 : <span className="calorie-number" style={{ color: '#faad14' }}>{totalCalorie}kcal</span>
+          </div>
+          {/* 🚨 [추가]: 총 탄단지 합계 표시 */}
+          <div className="total-macros-display" style={{ fontSize: '14px', color: '#555', marginRight: 'auto', marginLeft: '20px' }}>
+             T: {totalMacros.foodCarbo.toFixed(1)}g | P: {totalMacros.foodProtein.toFixed(1)}g | F: {totalMacros.foodFat.toFixed(1)}g
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <Button type="default" size="large" danger onClick={handleDelete}>

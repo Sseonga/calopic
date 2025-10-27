@@ -299,7 +299,7 @@
 .macro-name {
     font-size: 14px;
     color: #666;
-    width: 70px; /* 이름 너비 고정 */
+    width: 63px; /* 이름 너비 고정 */
     flex-shrink: 0;
     margin-right: 10px;
 }
@@ -485,7 +485,7 @@
 
 /* 탭 스타일 (아침, 점심, 저녁, 간식) */
 .meal-tabs-custom {
-    font-size: 50px;
+    font-size: 70px;
     padding: 0 20px;
     margin-top: 20px; /* 날짜가 올라온 공간만큼 탭을 내립니다. */
 }

@@ -107,13 +107,12 @@ const PageJoin = () => {
                 answer: formData.answer.trim(),
             };
 
-            const { data } = await postJoin(payload);
-            const success = data?.success ?? data?.result ?? false;
+            const response = await postJoin(payload);
 
-            if(success) {
+            if(response?.success) {
                 navigate("/login", { replace: true });
             } else {
-                setErrorMsg(data?.message || "회원가입에 실패했습니다.");
+                setErrorMsg(response?.message || "회원가입에 실패했습니다.");
             }
         } catch(error) {
             setErrorMsg(error.userMessage || "회원가입 처리 중 오류가 발생했습니다.");
@@ -123,11 +122,11 @@ const PageJoin = () => {
     };
 
     const questionOptions = [
-        { value: "COLOR", label: "가장 좋아하는 색상은?"},
-        { value: "FOOD", label: "가장 좋아하는 음식은?"},
-        { value: "HOBBY", label: "즐겨하는 취미생활은?"},
-        { value: "NUTRITION", label: "탄단지 중 가장 중요하게 생각하는 것은?"},
-        { value: "RESPECT", label: "가장 존경하는 인물은?"},
+        { value: "QUESTION01", label: "가장 좋아하는 색상은?"},
+        { value: "QUESTION02", label: "가장 좋아하는 음식은?"},
+        { value: "QUESTION03", label: "즐겨하는 취미생활은?"},
+        { value: "QUESTION04", label: "탄단지 중 가장 중요하게 생각하는 것은?"},
+        { value: "QUESTION05", label: "가장 존경하는 인물은?"},
     ];
 
     return(
