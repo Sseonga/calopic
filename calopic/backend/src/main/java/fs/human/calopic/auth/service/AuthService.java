@@ -38,6 +38,10 @@ public class AuthService {
         if (saved == null) {
             throw new IllegalStateException("회원가입 후 사용자 조회에 실패했습니다.");
         }
+
+        // 가입과 동시에 TB_USER_INFO에 빈 레코드 생성
+        userDAO.insertUserInfoBlank(saved.getId());
+
         saved.setUserPassword(null);
         return saved;
     }

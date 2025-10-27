@@ -52,4 +52,13 @@
         WHERE USER_NAME   = #{userName}
     </update>
 
+    <!-- USER_INFO 빈 줄 생성: 가입 직후 호출 -->
+    <insert id="insertUserInfoBlank">
+        INSERT INTO TB_USER_INFO (
+        USER_ID, CREATED_DATE, UPDATED_DATE
+        ) VALUES (
+        #{userId}, SYSDATE, SYSDATE
+        )
+    </insert>
+
 </mapper>

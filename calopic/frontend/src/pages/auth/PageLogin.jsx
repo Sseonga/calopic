@@ -117,7 +117,7 @@ const PageLogin = () =>{
                 </form>
 
                 <div className="helper-row">
-                    <Link to="/resetPwd" className="link">비밀번호를 잊으셨나요?</Link>
+                    <Link to="/reset-password" className="link">비밀번호를 잊으셨나요?</Link>
                 </div>
                 <div className="helper-row">
                     <span className="muted">아직 계정이 없으신가요?</span>

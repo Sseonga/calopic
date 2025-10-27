@@ -11,7 +11,10 @@ public interface UserDAO {
     UserVO findByUserName(@Param("userName") String userName);
     void insertUser(UserVO user);
 
-    // ★ 추가: 비밀번호 변경
+    // 가입 직후 USER_INFO 빈 줄 생성
+    int insertUserInfoBlank(@Param("userId") Long userId);
+
+    // 비밀번호 변경
     int updatePasswordByUserName(@Param("userName") String userName,
                                  @Param("hashedPwd") String hashedPwd);
 }

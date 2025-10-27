@@ -3,7 +3,6 @@ package fs.human.calopic.auth.dto;
 import fs.human.calopic.user.vo.UserVO;
 import java.util.Date;
 
-// ✅ record 사용 매우 깔끔함
 public record UserResponse(
         Long id,
         String userId,      // = USER_NAME
