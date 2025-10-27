@@ -72,7 +72,7 @@ public class AuthService {
         String a  = norm(found.getUserAnswer());
         String rq = norm(question);
         String ra = norm(answer);
-        
+
         return q.equalsIgnoreCase(rq) && a.equalsIgnoreCase(ra);
     }
 
