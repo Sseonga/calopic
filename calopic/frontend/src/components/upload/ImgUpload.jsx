@@ -4,6 +4,7 @@ import './ImgUpload.css';
 import { Upload, Button } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import CustomUpload2 from '../common/CustomUpload2';
+import axios from 'axios';
 
 const { Dragger } = Upload;
 
@@ -39,6 +40,33 @@ export default function ImgUpload({
     showUploadList: false, // 상단은 안내 영역만, 리스트는 하단에서 표시
   };
 
+  const handleBeforeUpload = async (file) => {
+    // FastAPI /detect 호출
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post("http://localhost:8000/detect", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // res.data.detections: [{class_id, class_name, confidence, bbox}, ...]
+      console.log("AI 분석 결과:", res.data.detections);
+
+      // 필요 시 상위 컴포넌트나 상태에 전달
+      // 예: setAiResult(res.data.detections);
+
+    } catch (error) {
+      console.error("AI 분석 실패:", error);
+    }
+
+    // false 반환하면 기본 Upload(action)로 보내지 않음
+    return false;
+  };
+
+
   return (
     <div className="img-upload-wrap" style={{ display: 'grid', gap: 16 }}>
         <h2>식단 이미지 업로드</h2>
@@ -52,7 +80,14 @@ export default function ImgUpload({
           background: '#fafafa',
         }}
       >
-        <Dragger {...draggerProps} height={220} rootClassName="img-upload-root" className="img-upload-dragger" style={{ background: 'transparent' }}>
+        <Dragger
+          {...draggerProps}
+          height={220}
+          rootClassName="img-upload-root"
+          className="img-upload-dragger"
+          style={{ background: 'transparent' }}
+          beforeUpload={handleBeforeUpload}
+        >
           <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
             음식 이미지를 여기로 업로드하세요.
           </p>

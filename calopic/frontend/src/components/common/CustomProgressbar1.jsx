@@ -23,7 +23,7 @@ export default function CustomProgressbar1({
   showInfo = true,
   color = '#717bffff',
   trailColor = '#f5f5f5',
-  strokeWidth = 8,
+  size = 8,
   type = 'line',
   steps,
   style,
@@ -43,7 +43,7 @@ export default function CustomProgressbar1({
             showInfo={bar.showInfo ?? showInfo}
             strokeColor={bar.color || colorPalette[i % colorPalette.length]}
             trailColor={trailColor}
-            strokeWidth={strokeWidth}
+            size={size}
             type={type}
             steps={steps}
           />
@@ -59,7 +59,7 @@ export default function CustomProgressbar1({
       showInfo={showInfo}
       strokeColor={color}
       trailColor={trailColor}
-      strokeWidth={strokeWidth}
+      size={size}
       type={type}
       steps={steps}
       style={style}

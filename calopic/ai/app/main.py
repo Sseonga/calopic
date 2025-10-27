@@ -1,37 +1,49 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
-from app.models.yolov8_detector import FoodDetector
-from app.models.resnet_estimator import WeightEstimator
-from PIL import Image
-import io
+from ultralytics import YOLO
 import tempfile
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+name_file_path = os.path.join(BASE_DIR, "models", "data", "food.names")
+yolo_file_path = os.path.join(BASE_DIR, "models", "best.pt")
 
 app = FastAPI()
 
-detector = FoodDetector("models/yolov8_food.pt")
-estimator = WeightEstimator("models/resnet_weight.pt")
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React 개발 서버 주소
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/analyze")
-async def analyze_food(image: UploadFile = File(...)):
-    # 1. 이미지 저장
-    img_bytes = await image.read()
-    tmp_path = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-    tmp_path.write(img_bytes)
-    tmp_path.close()
+# ✅ 클래스 이름 로드
+with open(name_file_path, "r", encoding="utf-8") as f:
+    class_names = [line.strip() for line in f.readlines()]
 
-    # 2. 1단계: 음식 감지
-    detections = detector.detect(tmp_path.name)
+# ✅ YOLO 모델 로드
+model = YOLO(yolo_file_path)
 
-    # 3. 2단계: 감지된 음식별 중량 추정
-    results = []
-    for det in detections:
-        crop = Image.open(tmp_path.name).crop(det["bbox"])
-        crop_path = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg").name
-        crop.save(crop_path)
-        weight = estimator.predict_weight(crop_path)
-        results.append({
-            "class_id": det["class_id"],
-            "bbox": det["bbox"],
-            "weight": weight
+@app.post("/detect")
+async def detect_food(file: UploadFile = File(...)):
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    tmp.write(await file.read())
+    tmp.close()
+
+    # ✅ YOLO 탐지 실행
+    results = model(tmp.name)
+
+    detections = []
+    for box in results[0].boxes:
+        cls_id = int(box.cls)
+        detections.append({
+            "class_id": cls_id,
+            "class_name": class_names[cls_id] if cls_id < len(class_names) else "Unknown",
+            "confidence": float(box.conf),
+            "bbox": box.xyxy[0].tolist()
         })
 
-    return {"results": results}
+    # ✅ 결과 JSON으로 반환
+    return {"detections": detections}

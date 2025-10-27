@@ -81,7 +81,7 @@ export default function CustomModal1({
         width={width}
         maskClosable={maskClosable}
         confirmLoading={confirmLoading}
-        destroyOnClose
+        destroyOnHidden={true}
       >
         {/* children으로 외부 내용 표시 */}
         {children}
