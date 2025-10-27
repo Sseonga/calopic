@@ -21,7 +21,9 @@ export default function PageUpload() {
       {/* DietNutrientInfo에 totals 그대로 전달 */}
       <DietNutrientInfo totals={totals} />
 
-      <div style={{ height: 50 }} />
+      <div style={{ height: 50 }} 
+      />
+      <button className="upload-to-diary-btn">내 다이어리에 저장</button>
     </div>
   );
 }
