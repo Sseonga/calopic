@@ -15,6 +15,7 @@ export default function ImgUpload({
   multiple = true,
   onChange,
   onPreview,
+  onDetections,
 }) {
   const [fileList, setFileList] = useState(defaultFileList);
 
@@ -46,9 +47,12 @@ export default function ImgUpload({
       const res = await axios.post('http://localhost:8000/detect', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('AI 분석 결과:', res.data.detections);
+      const detections = res.data?.detections || [];
+      console.log('AI 분석 결과:', detections);
+      onDetections && onDetections(detections);   // ← 상위로 올림
     } catch (error) {
-      console.error('AI 분석 실패:', error);
+        console.error('AI 분석 실패:');
+        onDetections && onDetections([]);           // 실패 시 빈 배열
     }
 
     // 업로드 막기 (네트워크 전송 X)

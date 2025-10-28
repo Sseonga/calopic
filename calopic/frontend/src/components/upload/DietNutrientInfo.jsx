@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import CustomProgressbar1 from '../common/CustomProgressbar1';
 
 const COLORS = {
-  calories: '#ff8486ff',
+  calories: '#ff8486',  // 6자리 권장
   protein:  '#36c96d',
   carbs:    '#b37feb',
   fat:      '#ffd08a',
@@ -11,7 +11,8 @@ const COLORS = {
 };
 
 const clamp = (v) => Math.max(0, Math.min(100, Math.round(v)));
-const toPct = (v, g) => (g > 0 ? clamp((v / g) * 100) : 0);
+const toPctRaw = (v, g) => (g > 0 ? (v / g) * 100 : 0);     // 캡 없음
+const toPctCap = (v, g) => (g > 0 ? clamp((v / g) * 100) : 0); // 0~100 캡
 
 /* donut */
 function Donut({ size=220, thickness=20, segments=[], centerText={ title:'총', value:0, unit:'kcal' } }) {
@@ -65,37 +66,60 @@ function Donut({ size=220, thickness=20, segments=[], centerText={ title:'총', 
 }
 
 export default function DietNutrientInfo({ totals, goals }) {
-  // goals 기본값
   const G = goals || { calories: 2000, protein: 55, carbs: 275, fat: 54 };
 
-  // hooks는 무조건 최상단
-  const p = useMemo(() => {
+  // 1) 원본 퍼센트(캡 없음)
+  const pRaw = useMemo(() => {
     if (!totals) return { calories:0, protein:0, carbs:0, fat:0 };
     return {
-      calories: toPct(totals.calories, G.calories),
-      protein:  toPct(totals.protein,  G.protein),
-      carbs:    toPct(totals.carbs,    G.carbs),
-      fat:      toPct(totals.fat,      G.fat),
+      calories: toPctRaw(totals.calories, G.calories),
+      protein:  toPctRaw(totals.protein,  G.protein),
+      carbs:    toPctRaw(totals.carbs,    G.carbs),
+      fat:      toPctRaw(totals.fat,      G.fat),
     };
   }, [totals, G]);
 
+  // 2) 표시/도넛/막대 채움용(0~100)
+  const pCap = useMemo(() => ({
+    calories: toPctCap(totals?.calories ?? 0, G.calories),
+    protein:  toPctCap(totals?.protein  ?? 0, G.protein),
+    carbs:    toPctCap(totals?.carbs    ?? 0, G.carbs),
+    fat:      toPctCap(totals?.fat      ?? 0, G.fat),
+  }), [totals, G]);
+
   const segments = useMemo(() => {
-    const used = p.calories + p.protein + p.carbs + p.fat;
+    const used = pCap.calories + pCap.protein + pCap.carbs + pCap.fat;
     const rest = clamp(100 - used);
     return [
-      { key:'calories', label:'칼로리',   percent:p.calories, color:COLORS.calories },
-      { key:'protein',  label:'단백질',   percent:p.protein,  color:COLORS.protein  },
-      { key:'carbs',    label:'탄수화물', percent:p.carbs,    color:COLORS.carbs    },
-      { key:'fat',      label:'지방',     percent:p.fat,      color:COLORS.fat      },
-      { key:'other',    label:'기타',     percent:rest,       color:COLORS.other    },
+      { key:'calories', label:'칼로리',   percent:pCap.calories, color:COLORS.calories },
+      { key:'protein',  label:'단백질',   percent:pCap.protein,  color:COLORS.protein  },
+      { key:'carbs',    label:'탄수화물', percent:pCap.carbs,    color:COLORS.carbs    },
+      { key:'fat',      label:'지방',     percent:pCap.fat,      color:COLORS.fat      },
+      { key:'other',    label:'기타',     percent:rest,          color:COLORS.other    },
     ].filter(s=>s.percent>0);
-  }, [p]);
+  }, [pCap]);
 
   const bars = [
-    { key:'calories', label:'칼로리',   value: totals?.calories ?? 0, goal: G.calories, unit:'kcal', color:COLORS.calories, percent:p.calories },
-    { key:'protein',  label:'단백질',   value: totals?.protein  ?? 0, goal: G.protein,  unit:'g',    color:COLORS.protein,  percent:p.protein  },
-    { key:'carbs',    label:'탄수화물', value: totals?.carbs    ?? 0, goal: G.carbs,    unit:'g',    color:COLORS.carbs,    percent:p.carbs    },
-    { key:'fat',      label:'지방',     value: totals?.fat      ?? 0, goal: G.fat,      unit:'g',    color:COLORS.fat,      percent:p.fat      },
+    {
+      key:'calories', label:'칼로리',
+      value: totals?.calories ?? 0, goal: G.calories, unit:'kcal',
+      color: COLORS.calories, percentRaw: pRaw.calories, percentCap: pCap.calories
+    },
+    {
+      key:'protein', label:'단백질',
+      value: totals?.protein ?? 0, goal: G.protein, unit:'g',
+      color: COLORS.protein, percentRaw: pRaw.protein, percentCap: pCap.protein
+    },
+    {
+      key:'carbs', label:'탄수화물',
+      value: totals?.carbs ?? 0, goal: G.carbs, unit:'g',
+      color: COLORS.carbs, percentRaw: pRaw.carbs, percentCap: pCap.carbs
+    },
+    {
+      key:'fat', label:'지방',
+      value: totals?.fat ?? 0, goal: G.fat, unit:'g',
+      color: COLORS.fat, percentRaw: pRaw.fat, percentCap: pCap.fat
+    },
   ];
 
   return (
@@ -117,13 +141,23 @@ export default function DietNutrientInfo({ totals, goals }) {
             <React.Fragment key={b.key}>
               <div style={{ fontWeight:600, color:b.color }}>{b.label}</div>
               <div>
-                <div style={{ marginBottom:6, color:'#999' }}>
+                <div style={{ marginBottom:4, color:'#999' }}>
                   {b.value.toLocaleString()} / {b.goal.toLocaleString()} {b.unit}
                 </div>
-                <CustomProgressbar1 percent={b.percent} status={b.value > b.goal ? 'exception' : 'active'}
-                  color={b.color} trailColor="#e9e9e9" strokeWidth={10} showInfo={false} />
+                {/* 막대는 0~100으로 채움. CustomProgressbar1이 내부에서 cap 처리하도록 percentRaw를 넘겨도 됨 */}
+                <CustomProgressbar1
+                  percent={b.percentRaw}
+                  status={b.value > b.goal ? 'exception' : 'active'}
+                  color={b.color}
+                  trailColor="#e9e9e9"
+                  strokeWidth={12}
+                  showInfo={false}
+                />
               </div>
-              <div style={{ color:'#999', fontWeight:600 }}>{b.percent}%</div>
+              {/* 텍스트는 원본 퍼센트로 표시, 100% 이상이면 빨간색 */}
+              <div style={{ color: b.percentRaw >= 100 ? 'red' : '#999', fontWeight:600 }}>
+                {Math.round(b.percentRaw)}%
+              </div>
             </React.Fragment>
           ))}
         </div>

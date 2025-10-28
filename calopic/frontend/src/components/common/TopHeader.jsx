@@ -27,7 +27,7 @@ export default function TopHeader() {
   const handleMenuClick = (e) => {
     if (e.key === 'mypage') navigate('/mypage');
     if (e.key === 'logout') {
-      axios.post('http://localhost:18090/api/auth/logout', {}, { withCredentials: true })
+      axios.post('http://localhost:18090/auth/logout', {}, { withCredentials: true })
         .finally(() => navigate('/login'));
     }
   };
