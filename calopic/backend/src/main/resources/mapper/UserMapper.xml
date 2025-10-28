@@ -23,6 +23,14 @@
         WHERE USER_NAME = #{userName}
     </select>
 
+    <select id="findByUserName" parameterType="string" resultMap="UserMap">
+        SELECT  USER_ID, USER_NAME, USER_PASSWORD, IS_ADMIN,
+        USER_QUESTION, USER_ANSWER,
+        CREATED_DATE, CREATED_ID, UPDATED_DATE, UPDATED_ID
+        FROM TB_USER
+        WHERE USER_NAME = #{userName}
+    </select>
+
     <!-- 악센트/정규화 차이 무시 + 대소문자 무시 -->
     <select id="findByUserNameLinguistic" resultMap="UserMap">
         SELECT  USER_ID, USER_NAME, USER_PASSWORD, IS_ADMIN,
