@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import './PageCalculator.css';
+import { calculateMifflinStJeorBMR } from '../../utils/bmrCalculator';
 
 
 // ⭐️ 페이지네이션 컴포넌트 (그룹 이동 및 처음/끝 이동 기능 추가)
@@ -94,6 +95,12 @@ const PageCalculator = () => {
   const [displayedSelectedFoods, setDisplayedSelectedFoods] = useState([]); // 화면에 보여줄 선택 목록
   const ITEMS_PER_LOAD = 7; // 한 번에 로드할 항목 개수
 
+  //  사용자 신체 정보를 저장할 state 추가
+  const [userInfo, setUserInfo] = useState(null);
+
+  //  계산된 BMR 값을 저장할 state 추가
+  const [bmrValue, setBmrValue] = useState('계산 중...'); // 초기값 설정
+
   //  백엔드에서 데이터를 가져오는 부분
   useEffect(() => {
     // 백엔드 API 주소 (CalculatorController의 @GetMapping 경로)
@@ -114,6 +121,37 @@ const PageCalculator = () => {
           console.error("음식 데이터를 불러오는 중 오류 발생:", error);
         });
   }, []); // [] : 처음 한 번만 실행
+
+  //  백엔드에서 사용자 신체 정보 가져오기 (마이페이지와 동일 로직)
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await axios.get('http://localhost:18090/api/mypage/userinfo', {
+          withCredentials: true
+        });
+        setUserInfo(response.data);
+      } catch (error) {
+        console.error("계산기 페이지: 신체 정보 로딩 오류:", error);
+        // 오류 발생 시 기본값 또는 빈 객체 설정 가능
+        setUserInfo({});
+      }
+    };
+    fetchUserInfo();
+  }, []); // [] : 처음 한 번만 실행
+
+  //  userInfo state가 변경될 때마다 BMR을 다시 계산하는 useEffect 추가
+  useEffect(() => {
+    if (userInfo) { // userInfo가 null이 아닐 때만 계산
+      const calculated = calculateMifflinStJeorBMR(
+          userInfo.userGender,
+          userInfo.userWeight,
+          userInfo.userHeight
+      );
+      setBmrValue(calculated); // 계산된 값으로 bmrValue state 업데이트
+    } else {
+      setBmrValue('정보 없음'); // userInfo가 null이면 다른 텍스트 표시
+    }
+  }, [userInfo]); //  userInfo가 바뀔 때마다 이 useEffect 실행
 
   //  Filter the food data based on the search query
   const filteredFoodData = allFoodData.filter(food =>
@@ -261,8 +299,9 @@ const PageCalculator = () => {
           <div className="col col-sm-8">
             <div className="card statistic-card"><div className="card-body">
               <div className="statistic-title">기초대사량</div>
-              <div className="statistic-value">1300 Kcal</div>
-            </div></div>
+              <div className="statistic-value">{bmrValue} Kcal</div>
+            </div>
+            </div>
           </div>
           <div className="col col-sm-8">
             <div className="card"><div className="card-body">

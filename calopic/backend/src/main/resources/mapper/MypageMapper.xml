@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fs.human.calopic.mypage.mapper.MypageMapper">
+
+    <select id="findMypageByUserId" parameterType="long" resultType="fs.human.calopic.mypage.vo.MypageVO">
+        SELECT
+            USER_ID        AS userId,
+            USER_GENDER    AS userGender,
+            USER_HEIGHT    AS userHeight,
+            USER_WEIGHT    AS userWeight,
+            USER_BODYFAT   AS userBodyfat,
+            USER_MUSCLE    AS userMuscle,
+            USER_GOAL      AS userGoal
+        FROM
+            TB_USER_INFO
+        WHERE
+            USER_ID = #{userId}
+    </select>
+
+    <update id="upsertMypage" parameterType="fs.human.calopic.mypage.vo.MypageVO">
+        MERGE INTO TB_USER_INFO T_INFO
+            USING (SELECT #{userId} AS USER_ID FROM DUAL) T_USER
+            ON (T_INFO.USER_ID = T_USER.USER_ID)
+            WHEN MATCHED THEN
+                UPDATE SET
+                    USER_GENDER    = #{userGender},
+                    USER_HEIGHT    = #{userHeight},
+                    USER_WEIGHT    = #{userWeight},
+                    USER_BODYFAT   = #{userBodyfat},
+                    USER_MUSCLE    = #{userMuscle},
+                    USER_GOAL      = #{userGoal},
+                    UPDATED_DATE   = SYSDATE,
+                    UPDATED_ID     = #{userId}
+            WHEN NOT MATCHED THEN
+                INSERT (
+                        USER_ID, USER_GENDER, USER_HEIGHT, USER_WEIGHT, USER_BODYFAT,
+                        USER_MUSCLE, USER_GOAL,
+                        CREATED_ID, UPDATED_ID
+                    )
+                    VALUES (
+                               #{userId}, #{userGender}, #{userHeight}, #{userWeight}, #{userBodyfat},
+                               #{userMuscle}, #{userGoal},
+                               #{userId}, #{userId}
+                           )
+    </update>
+
+</mapper>
