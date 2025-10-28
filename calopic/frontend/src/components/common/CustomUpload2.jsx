@@ -1,47 +1,28 @@
-// src/component/CustomUpload2.jsx
 import React, { useState } from 'react';
 import { Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 
 /**
  * CustomUpload2 — 이미지 크롭(회전 포함) + picture-card 리스트 업로드
- *
- * props:
- *  - action: 업로드 API 엔드포인트
- *  - fileList: 외부 제어용 파일 리스트 (제어 컴포넌트로 사용 시)
- *  - defaultFileList: 초기 파일 리스트 (비제어 사용 시)
- *  - onChange: 업로드 리스트 변경 콜백 (info) => void
- *  - onPreview: 미리보기 콜백 (file) => void
- *  - maxCount: 최대 업로드 개수 (기본 5)
- *  - listType: 업로드 리스트 타입 (기본 'picture-card')
- *  - accept: 허용 파일 타입 (예: 'image/*')
- *  - multiple: 다중 업로드 여부
- *  - crop: { rotationSlider?: boolean, aspect?: number } 크롭 옵션
- *  - childrenText: 버튼/카드 내부 텍스트 (기본 '+ Upload')
+ * 실제 업로드를 막고 로컬 리스트만 관리하려면 beforeUpload를 전달하세요.
+ * (customRequest가 즉시 onSuccess를 호출하여 네트워크 요청을 하지 않습니다)
  */
 export default function CustomUpload2({
-  action = 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
+  action = '/api/upload',          // 프록시/절대주소 사용 시만 의미 있음 (intercept 시 무시됨)
   fileList,
-  defaultFileList = [
-    {
-      uid: '-1',
-      name: 'image.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-  ],
+  defaultFileList = [],
   onChange,
   onPreview,
+  beforeUpload,                    // 추가: 업로드 전 인터셉트
   maxCount = 5,
   listType = 'picture-card',
   accept = 'image/*',
   multiple = false,
   crop = { rotationSlider: true },
   childrenText = '+ Upload',
+  name = 'file',
 }) {
-  // 비제어(내부 상태) 모드용
   const [internalList, setInternalList] = useState(defaultFileList);
-
   const isControlled = Array.isArray(fileList);
   const currentList = isControlled ? fileList : internalList;
 
@@ -53,9 +34,8 @@ export default function CustomUpload2({
   const handlePreview = async (file) => {
     if (onPreview) return onPreview(file);
 
-    // 기본 미리보기 동작
     let src = file.url;
-    if (!src) {
+    if (!src && file.originFileObj) {
       src = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file.originFileObj);
@@ -64,20 +44,31 @@ export default function CustomUpload2({
     }
     const image = new Image();
     image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(image.outerHTML);
+    const w = window.open(src);
+    w?.document.write(image.outerHTML);
+  };
+
+  // 네트워크 요청을 아예 하지 않도록 가짜 업로드 처리
+  const noNetworkCustomRequest = ({ onProgress, onSuccess }) => {
+    // 진행률 흉내 (선택)
+    onProgress?.({ percent: 100 });
+    // 즉시 성공 처리 -> antd가 리스트 상태를 'done'으로 만듭니다
+    onSuccess?.({ ok: true });
   };
 
   return (
     <ImgCrop {...crop}>
       <Upload
-        action={action}
+        action={action}                 // customRequest 사용 중이라도 prop은 유지
         listType={listType}
         fileList={currentList}
         onChange={handleChange}
         onPreview={handlePreview}
         accept={accept}
         multiple={multiple}
+        name={name}
+        beforeUpload={beforeUpload}     // Dragger와 동일하게 인터셉트
+        customRequest={noNetworkCustomRequest} // 실제 POST 방지
       >
         {currentList.length < maxCount && childrenText}
       </Upload>
