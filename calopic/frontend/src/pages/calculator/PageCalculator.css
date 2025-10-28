@@ -234,6 +234,7 @@
     padding: 19px 24px 12px 24px;
     flex: 1;
     overflow: hidden;
+    position: relative;
 }
 
 /* 테이블을 감싸는 wrapper 설정 */
@@ -260,4 +261,33 @@
 /* 빈 행 스타일 (높이 유지용) */
 .empty-row td {
     visibility: hidden;
+}
+
+/* =================================================================
+   초기화 버튼 스타일 추가
+================================================================= */
+.reset-button {
+    position: absolute; /* card-body 기준으로 위치 지정 */
+    bottom: 12px;       /* 하단 여백 */
+    right: 24px;        /* 오른쪽 여백 */
+    background-color: #f5f5f5; /* 연한 회색 배경 */
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    cursor: pointer;
+}
+
+.reset-button:hover {
+    background-color: #1890ff;
+    border-color: #1890ff;
+    color: #f5f5f5;
+}
+
+.reset-button:disabled {
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    color: rgba(0, 0, 0, 0.25);
+    cursor: not-allowed;
 }

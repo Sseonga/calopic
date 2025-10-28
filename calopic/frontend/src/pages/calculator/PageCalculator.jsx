@@ -151,6 +151,11 @@ const PageCalculator = () => {
     setSelectedFoods(updatedFoods);
   };
 
+  // 선택 리스트 초기화 함수 추가
+  const handleResetSelectedFoods = () => {
+    setSelectedFoods([]); // 선택 목록을 빈 배열로 만듭니다.
+  };
+
   return (
       <div className="calculator-page">
         <div className="row top-row">
@@ -233,6 +238,16 @@ const PageCalculator = () => {
                   </table>
                 </div>
                 {/* <--- selected-list-table-wrapper 끝 */}
+
+                {/* 초기화 버튼을 추가*/}
+                {/* 스크롤 영역(wrapper) 바깥, 카드 본문(card-body) 안쪽에 위치시킵니다. */}
+                <button
+                    className="reset-button"
+                    onClick={handleResetSelectedFoods} // 이 함수는 PageCalculator 컴포넌트 내에 정의되어 있어야 합니다.
+                    disabled={selectedFoods.length === 0} // 선택된 항목이 없을 때 비활성화
+                >
+                  초기화
+                </button>
               </div>
               {/* <--- card-body 끝 */}
             </div>
