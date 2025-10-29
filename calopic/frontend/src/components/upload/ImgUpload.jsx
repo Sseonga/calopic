@@ -55,8 +55,10 @@ export default function ImgUpload({
       const detections = res.data?.detections || [];
       const withUid = detections.map(d => ({ ...d, sourceUid: file.uid })); // ← 핵심
       onDetections && onDetections({ type: 'add', items: withUid });
+      console.log("AI 분석 결과:", res.data.detections);
     } catch (error) {
       onDetections && onDetections({ type: 'add', items: [] });
+      console.error("AI 분석 실패:", error);
     }
     return false; // 네트워크 업로드 차단
   };
