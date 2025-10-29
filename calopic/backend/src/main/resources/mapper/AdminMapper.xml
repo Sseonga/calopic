@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fs.human.calopic.admin.dao.AdminDAO">
+
+    <resultMap id="AdminUserMap" type="fs.human.calopic.admin.vo.AdminVO">
+        <id     column="USER_ID"       property="userId"/>
+        <result column="IS_ADMIN"      property="isAdmin"/>
+        <result column="USER_NAME"     property="userName"/>
+        <result column="USER_QUESTION" property="userQuestion"/>
+        <result column="USER_ANSWER"   property="userAnswer"/>
+        <result column="CREATED_DATE"  property="createdDate"
+                jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- role: all | admin | user -->
+    <select id="selectUsers" parameterType="string" resultMap="AdminUserMap">
+        SELECT
+        u.USER_ID,
+        u.IS_ADMIN,
+        u.USER_NAME,
+        u.USER_QUESTION,
+        u.USER_ANSWER,
+        u.CREATED_DATE
+        FROM TB_USER u
+        <where>
+            <choose>
+                <when test="role == 'admin'">
+                    u.IS_ADMIN = 'Y'
+                </when>
+                <when test="role == 'user'">
+                    u.IS_ADMIN = 'N'
+                </when>
+                <otherwise>
+                    1 = 1
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY u.USER_ID ASC
+    </select>
+
+</mapper>
