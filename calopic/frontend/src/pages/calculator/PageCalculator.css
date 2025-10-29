@@ -291,3 +291,42 @@
     color: rgba(0, 0, 0, 0.25);
     cursor: not-allowed;
 }
+
+/* =================================================================
+   활동대사량 버튼 스타일 추가
+================================================================= */
+.activity-buttons button.activity-button {
+    background-color: #f5f5f5; /* 기본 배경색 */
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 8px; /* 오른쪽 여백 */
+}
+
+/* 마우스를 올렸을 때 */
+.activity-buttons button.activity-button:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+/* ⭐️ 활성화(선택)되었을 때 스타일 (기본 '활동량 보통' 버튼) */
+.activity-buttons button.activity-button.active {
+    background-color: #1890ff; /* 스케치의 '활동량 적음'과 유사한 빨간색 */
+    border-color: #1890ff;
+    color: #fff;
+}
+
+/* =================================================================
+   선택 리스트가 비어있을 때 안내 문구 스타일
+================================================================= */
+.empty-list-message-row td {
+    text-align: center !important; /* 글자 가운데 정렬 */
+    color: #8c8c8c; /* 연한 회색 글씨 */
+    padding: 40px 16px !important; /* 충분한 상하 여백 */
+    height: auto !important; /* 고정 높이 해제 */
+    visibility: visible !important; /* .empty-row td의 hidden 속성 덮어쓰기 */
+}

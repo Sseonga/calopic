@@ -5,9 +5,12 @@
 
     <select id="selectAllFoodsForCalculator" resultType="fs.human.calopic.calculator.vo.CalculatorVO">
         SELECT
-            FOOD_ID    AS foodId,    /* VO의 foodId 필드와 매칭 */
-            FOOD_NAME  AS foodName,  /* VO의 foodName 필드와 매칭 */
-            FOOD_KCAL  AS foodKcal   /* VO의 foodKcal 필드와 매칭 */
+            FOOD_ID        AS foodId,
+            FOOD_NAME      AS foodName,
+            FOOD_KCAL      AS foodKcal,
+            FOOD_CARBO     AS foodCarbo,
+            FOOD_PROTEIN   AS foodProtein,
+            FOOD_FAT       AS foodFat
         FROM
             TB_FOOD
         ORDER BY

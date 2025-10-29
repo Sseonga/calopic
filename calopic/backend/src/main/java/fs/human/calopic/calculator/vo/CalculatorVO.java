@@ -8,4 +8,7 @@ public class CalculatorVO {
     private Long foodId;        // TB_FOOD의 FOOD_ID (React key로 사용)
     private String foodName;    // TB_FOOD의 FOOD_NAME
     private BigDecimal foodKcal;    // TB_FOOD의 FOOD_KCAL (NUMBER(7,2)와 매칭)
+    private BigDecimal foodCarbo;
+    private BigDecimal foodProtein;
+    private BigDecimal foodFat;
 }
