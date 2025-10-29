@@ -99,17 +99,17 @@
 }
 
 /* =================================================================
-   테이블 (Table) 스타일
+   테이블 (Table) 스타일 (⭐️ 수정됨)
 ================================================================= */
 .custom-table {
     width: 100%;
-    border-collapse: collapse; /* 테이블 선 한 줄로 합치기 */
+    border-collapse: collapse;
     margin-top: 16px;
 }
 
 .custom-table th,
 .custom-table td {
-    padding: 6px 16px; /* size="small" 과 유사한 패딩 */
+    padding: 6px 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     height: 35px;
@@ -124,12 +124,39 @@
     visibility: hidden;
 }
 
-/* 음식 목록 테이블의 행에 커서 올리면 포인터 모양으로 */
+/* 음식 목록 테이블 (변경 없음) */
 .food-list-table tbody tr {
     cursor: pointer;
 }
 .food-list-table tbody tr:hover {
     background-color: #fafafa;
+}
+
+/* * ⭐️ 1. 선택 리스트 테이블에 '고정 레이아웃' 적용
+ * (이 규칙이 .selected-list-table-wrapper .custom-table 보다 위에 있어야 함)
+ */
+.selected-list-card .custom-table {
+    table-layout: fixed; /* ⭐️ 핵심: 테이블 레이아웃을 고정합니다. */
+    width: 100%;
+}
+
+/* * ⭐️ 2. 선택 리스트의 '식품명' 칸(첫 번째 칸) 설정
+ * (긴 텍스트가 ...으로 표시되도록)
+ */
+.selected-list-card .custom-table td:first-child,
+.selected-list-card .custom-table th:first-child {
+    width: 30%; /* ⭐️ 식품명 칸이 차지할 너비 (조절 가능) */
+    white-space: nowrap; /* ⭐️ 줄바꿈 방지 */
+    overflow: hidden; /* ⭐️ 넘치는 텍스트 숨기기 */
+    text-overflow: ellipsis; /* ⭐️ 말줄임표(...) 표시 */
+}
+
+/* * ⭐️ 3. 선택 리스트의 '삭제' 칸(마지막 칸) 너비 고정
+ */
+.selected-list-card .custom-table td:last-child,
+.selected-list-card .custom-table th:last-child {
+    width: 40px; /* ⭐️ X 버튼을 위한 좁은 너비 */
+    text-align: center; /* 아이콘 중앙 정렬 */
 }
 
 .delete-icon {
@@ -329,4 +356,44 @@
     padding: 40px 16px !important; /* 충분한 상하 여백 */
     height: auto !important; /* 고정 높이 해제 */
     visibility: visible !important; /* .empty-row td의 hidden 속성 덮어쓰기 */
+}
+
+/* =================================================================
+   '양(g)' 수량 조절 버튼 스타일
+================================================================= */
+.quantity-cell {
+    /* ⭐️ display: flex를 사용하여 숫자와 버튼을 가로로 배치 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 숫자와 버튼 그룹을 양 끝으로 분리 */
+}
+
+.quantity-stepper {
+    display: flex;
+    flex-direction: column; /* 버튼을 위아래로 쌓음 */
+}
+
+.quantity-button {
+    background: none;
+    border: none;
+    padding: 0 4px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 10px; /* 아이콘 크기 */
+    line-height: 1; /* 아이콘 높이 맞춤 */
+}
+
+.quantity-button:hover {
+    color: #1890ff; /* Ant Design 기본 파란색 */
+}
+
+.quantity-button:disabled {
+    color: rgba(0, 0, 0, 0.15);
+    cursor: not-allowed;
+}
+
+/* ⭐️ 삭제 아이콘과 마찬가지로, 행 클릭 이벤트 방지 */
+.quantity-button,
+.delete-icon {
+    z-index: 1;
 }

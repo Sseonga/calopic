@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, CloseCircleOutlined, CaretUpOutlined, CaretDownOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import './PageCalculator.css';
 import { calculateMifflinStJeorBMR } from '../../utils/bmrCalculator';
@@ -172,15 +172,32 @@ const PageCalculator = () => {
   //  bmrValue나 activityLevel이 변경될 때마다 자동으로 다시 계산됨
   const calculatedTDEE = Math.round(bmrValue * activityLevel);
 
-  // 칼로리 총합 계싼
-  const totalSelectedCalories = useMemo(() => {
-    // selectedFoods 배열을 순회하며 'calories' 값을 합산합니다.
-    return selectedFoods.reduce((total, food) => {
-      //  '350Kcal' 같은 문자열에서 숫자(350)만 추출합니다.
-      const calories = parseFloat(food.calories) || 0;
-      return total + calories;
-    }, 0); // 초기값은 0
-  }, [selectedFoods]);
+  //  useMemo를 사용하여 총 영양소 합계 계산 (기존 totalSelectedCalories 확장)
+  const { totalCalories, totalCarbs, totalProtein, totalFat } = useMemo(() => {
+    // reduce를 사용해 selectedFoods 배열을 순회하며 모든 값을 누적
+    const totals = selectedFoods.reduce((acc, food) => {
+      // 100g당 기본값과 수량(multiplier)을 곱함
+      acc.calories += (food.baseCalories || 0) * food.multiplier;
+      acc.carbs += (food.baseCarbs || 0) * food.multiplier;
+      acc.protein += (food.baseProtein || 0) * food.multiplier;
+      acc.fat += (food.baseFat || 0) * food.multiplier;
+      return acc;
+    }, {
+      // ️ 각 항목의 초기값을 0으로 설정
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+    });
+
+    // 계산된 값을 반환 (칼로리는 반올림, 나머지는 소수점 1자리)
+    return {
+      totalCalories: Math.round(totals.calories),
+      totalCarbs: totals.carbs.toFixed(1),
+      totalProtein: totals.protein.toFixed(1),
+      totalFat: totals.fat.toFixed(1),
+    };
+  }, [selectedFoods]); // ️ selectedFoods가 변경될 때만 이 함수 실행
 
   //  Filter the food data based on the search query
   const filteredFoodData = allFoodData.filter(food =>
@@ -205,22 +222,38 @@ const PageCalculator = () => {
     setFoodListPage(1); // Reset to the first page when searching
   };
 
-    const handleAddFood = (food) => {
-        //  food 객체에는 이미 name, calories, carbs, protein, fat이 모두 들어있습니다.
-        //    (이전 단계의 useEffect - axios.get 에서 DB 데이터를 매핑해 두었습니다.)
-        const newFood = {
-            key: Date.now(), // 고유한 key 생성
-            name: food.name,
-            amount: '100g', // 기본값
-
-            //  백엔드에서 받은 실제 데이터(food)를 사용하도록 수정
-            carbs: `${food.carbs || 0}g`,     // 예: 22.5 -> "22.5g"
-            protein: `${food.protein || 0}g`, // 예: 21.5 -> "21.5g"
-            fat: `${food.fat || 0}g`,         // 예: 22.5 -> "22.5g"
-            calories: `${food.calories || 0}Kcal`,
-        };
-        setSelectedFoods(prev => [...prev, newFood]); //  prev => [...prev, newFood] 사용 권장
+  //  handleAddFood 함수 수정 (기본값과 수량(multiplier) 저장)
+  const handleAddFood = (food) => {
+    const newFood = {
+      key: Date.now(),
+      name: food.name,
+      //  수량 조절을 위한 데이터 구조 변경
+      multiplier: 1, //  기본 수량 1 (100g)
+      baseAmount: 100, // 기본 양 (g)
+      baseCarbs: food.carbs || 0, // 백엔드에서 받은 100g당 기본값
+      baseProtein: food.protein || 0,
+      baseFat: food.fat || 0,
+      baseCalories: food.calories || 0,
     };
+    setSelectedFoods(prev => [...prev, newFood]);
+  };
+
+  //  수량 변경 핸들러 함수 추가
+  const handleQuantityChange = (keyToChange, direction) => {
+    setSelectedFoods(prevFoods =>
+      prevFoods.map(food => {
+        if (food.key === keyToChange) {
+          // 'down' 버튼(direction = -1)이고 현재 수량이 1이면 더 이상 줄이지 않음
+          if (direction === -1 && food.multiplier <= 1) {
+            return food; // 1 (100g) 미만으로 내려가지 않음
+          }
+          // 수량 업데이트
+          return { ...food, multiplier: food.multiplier + direction };
+        }
+        return food; // 다른 음식은 그대로 반환
+      })
+    );
+  };
 
   const handleDeleteFood = (keyToDelete) => {
     const updatedFoods = selectedFoods.filter(food => food.key !== keyToDelete);
@@ -297,28 +330,51 @@ const PageCalculator = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {/* selectedFoods가 비어있는지 확인합니다. */}
                     {selectedFoods.length === 0 ? (
-                        //  비어있을 경우: 안내 문구를 표시하는 행을 렌더링합니다.
-                        <tr className="empty-list-message-row">
-                          <td colSpan="7">음식을 클릭하여 추가하세요.</td>
-                        </tr>
+                      <tr className="empty-list-message-row">
+                        <td colSpan="7">음식을 클릭하여 추가하세요.</td>
+                      </tr>
                     ) : (
-                        //  비어있지 않을 경우: 기존 목록을 렌더링합니다.
-                        selectedFoods.map(food => (
-                            <tr key={food.key}>
-                              <td>{food.name}</td>
-                              <td>{food.amount}</td>
-                              <td>{food.carbs}</td>
-                              <td>{food.protein}</td>
-                              <td>{food.fat}</td>
-                              <td>{food.calories}</td>
-                              <td><CloseCircleOutlined className="delete-icon"
-                                                       onClick={() => handleDeleteFood(food.key)}/></td>
-                            </tr>
-                        ))
+                      //  렌더링 시 수량을 곱해서 표시
+                      selectedFoods.map(food => (
+                        <tr key={food.key}>
+                          <td>{food.name}</td>
+                          {/* ️  양(g) 컬럼에 수량 조절 버튼 추가 */}
+                          <td className="quantity-cell">
+                            {/* <span>{food.amount}</span> -> 계산된 값으로 변경 */}
+                            <span>{food.baseAmount * food.multiplier}g</span>
+                            <div className="quantity-stepper">
+                              <button
+                                className="quantity-button"
+                                // ️ e.stopPropagation() 추가: 행 클릭(handleAddFood) 방지
+                                onClick={(e) => { e.stopPropagation(); handleQuantityChange(food.key, 1); }}
+                              >
+                                <CaretUpOutlined />
+                              </button>
+                              <button
+                                className="quantity-button"
+                                onClick={(e) => { e.stopPropagation(); handleQuantityChange(food.key, -1); }}
+                                disabled={food.multiplier <= 1} // 100g일 때 비활성화
+                              >
+                                <CaretDownOutlined />
+                              </button>
+                            </div>
+                          </td>
+                          {/*  영양소와 칼로리를 수량에 맞게 계산하여 표시 (소수점 1자리까지) */}
+                          <td>{(food.baseCarbs * food.multiplier).toFixed(1)}g</td>
+                          <td>{(food.baseProtein * food.multiplier).toFixed(1)}g</td>
+                          <td>{(food.baseFat * food.multiplier).toFixed(1)}g</td>
+                          <td>{Math.round(food.baseCalories * food.multiplier)}Kcal</td>
+                          <td>
+                            <CloseCircleOutlined
+                              className="delete-icon"
+                              onClick={(e) => { e.stopPropagation(); handleDeleteFood(food.key); }}
+                            />
+                          </td>
+                        </tr>
+                      ))
                     )}
-                    </tbody>
+                  </tbody>
                   </table>
                 </div>
                 {/* <--- selected-list-table-wrapper 끝 */}
@@ -386,7 +442,7 @@ const PageCalculator = () => {
               <div className="card statistic-card">
                   <div className="card-body">
                       <div className="statistic-title">총 음식 칼로리</div>
-                      <div className="statistic-value">{totalSelectedCalories} Kcal</div>
+                      <div className="statistic-value">{totalCalories} Kcal</div>
                       <p className="warning-text">*다이어트를 목표로 한다면...</p>
                   </div>
               </div>
@@ -398,29 +454,29 @@ const PageCalculator = () => {
                   <div className="card statistic-card">
                       <div className="card-body">
                           <div className="statistic-title">총 단백질</div>
-                          <div className="statistic-value">50 g</div>
-                <p className="warning-text">*약 100g의 단백질을...</p>
+                          <div className="statistic-value">{totalProtein} g</div>
+                          <p className="warning-text">*약 100g의 단백질을...</p>
+                      </div>
+                  </div>
               </div>
-            </div>
-          </div>
-          <div className="col col-sm-8">
+              <div className="col col-sm-8">
             <div className="card statistic-card">
-              <div className="card-body">
-                <div className="statistic-title">총 탄수화물</div>
-                <div className="statistic-value">150 g</div>
-                <p className="warning-text">*탄수화물의 비율을...</p>
-              </div>
+                <div className="card-body">
+                    <div className="statistic-title">총 탄수화물</div>
+                    <div className="statistic-value">{totalCarbs} g</div>
+                    <p className="warning-text">*탄수화물의 비율을...</p>
+                </div>
             </div>
-          </div>
-          <div className="col col-sm-8">
+              </div>
+              <div className="col col-sm-8">
             <div className="card statistic-card">
-              <div className="card-body">
-                <div className="statistic-title">총 지방</div>
-                <div className="statistic-value">100 g</div>
-              </div>
+                <div className="card-body">
+                    <div className="statistic-title">총 지방</div>
+                    <div className="statistic-value">{totalFat} g</div>
+                </div>
             </div>
+              </div>
           </div>
-        </div>
       </div>
   );
 };
