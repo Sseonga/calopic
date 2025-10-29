@@ -1,54 +1,76 @@
-// fs/human/calopic/layout/service/LayoutServiceImpl.java
 package fs.human.calopic.layout.service;
 
 import fs.human.calopic.layout.dao.LayoutDAO;
 import fs.human.calopic.layout.vo.LayoutVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LayoutServiceImpl implements LayoutService {
 
     private final LayoutDAO layoutDAO;
 
     @Override
     public LayoutVO getHeaderInfo(HttpSession session) {
-        System.out.println("[SVC] getHeaderInfo 호출");
+        if (session == null) return null;
 
-        Object idAttr = session.getAttribute("LOGIN_USER_ID");
-        System.out.println("[SVC] 세션 LOGIN_USER_ID=" + idAttr);
+        // 1) 세션에 이름이 이미 있으면 즉시 반환
+        Object nameObj = session.getAttribute("LOGIN_USER_NAME");
+        if (nameObj != null) {
+            LayoutVO vo = new LayoutVO();
+            vo.setUserName(String.valueOf(nameObj));
 
-        if (idAttr == null) return null;
+            Object idObj = session.getAttribute("LOGIN_USER_ID");
+            if (idObj != null) {
+                try { vo.setUserId(Long.valueOf(String.valueOf(idObj))); }
+                catch (NumberFormatException ignore) {}
+            }
+            log.debug("[LayoutServiceImpl] session hit userName={}", vo.getUserName());
+            return vo;
+        }
 
-        Long userId;
-        try {
-            userId = (idAttr instanceof Long) ? (Long) idAttr : Long.valueOf(idAttr.toString());
-        } catch (Exception e) {
-            System.out.println("[SVC] userId 파싱 실패: raw=" + idAttr);
-            e.printStackTrace();
+        // 2) 세션에 이름이 없으면, 세션의 ID로 DB 조회 → 성공 시 세션에 캐시
+        Object idObj = session.getAttribute("LOGIN_USER_ID");
+        if (idObj == null) {
+            log.warn("[LayoutServiceImpl] 세션에 LOGIN_USER_ID가 없습니다");
             return null;
         }
 
+        Long userId;
         try {
-            System.out.println("[SVC] DAO.existsUserId 호출 uid=" + userId);
-            Integer exists = layoutDAO.existsUserId(userId);
-            System.out.println("[SVC] DAO.existsUserId 결과=" + exists);
+            userId = Long.valueOf(String.valueOf(idObj));
+        } catch (NumberFormatException e) {
+            log.error("[LayoutServiceImpl] LOGIN_USER_ID 파싱 실패 value={}", idObj, e);
+            return null;
+        }
 
-            if (exists == null || exists == 0) {
-                System.out.println("[SVC] tb_user에 user_id=" + userId + " 없음");
-                return null;
-            }
+        LayoutVO vo = layoutDAO.selectUserNameById(userId);
+        if (vo == null || vo.getUserName() == null) {
+            log.warn("[LayoutServiceImpl] DB 조회 결과 없음 userId={}", userId);
+            return null;
+        }
 
-            LayoutVO vo = new LayoutVO();
-            vo.setUserId(userId);
-            System.out.println("[SVC] 반환 LayoutVO=" + vo);
-            return vo;
+        // 3) 캐시: 다음 요청부터는 DB 없이 세션에서 바로 응답
+        session.setAttribute("LOGIN_USER_NAME", vo.getUserName());
+        // 필요 시 하위 호환 키도 캐시해두면 프런트/다른 코드가 섞여 있어도 안전
+        session.setAttribute("userName", vo.getUserName());
+        session.setAttribute("userId", userId);
 
+        log.debug("[LayoutServiceImpl] DB hit userId={} userName={}", userId, vo.getUserName());
+        return vo;
+    }
+
+    @Override
+    public LayoutVO getHeaderInfoByUserId(Long userId) {
+        if (userId == null) return null;
+        try {
+            return layoutDAO.selectUserNameById(userId);
         } catch (Exception e) {
-            System.out.println("[SVC] DAO 호출 중 예외 발생");
-            e.printStackTrace();
+            log.error("[LayoutServiceImpl] getHeaderInfoByUserId 예외 userId={}", userId, e);
             return null;
         }
     }

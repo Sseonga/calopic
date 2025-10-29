@@ -11,11 +11,23 @@
         WHERE user_email = #{email}
     </select>
 
-    <!-- 로그인 아이디(문자형)로 user_id 조회가 필요할 수도 있어서 보강 -->
+    <!-- 로그인 아이디(문자형)로 user_id 조회 -->
     <select id="findUserIdByLoginId" parameterType="string" resultType="long">
         SELECT user_id
         FROM tb_user
         WHERE login_id = #{loginId}
+    </select>
+
+    <!-- ✅ 헤더용: userId로 userName 조회 -->
+    <resultMap id="LayoutMap" type="fs.human.calopic.layout.vo.LayoutVO">
+        <id property="userId" column="USER_ID"/>
+        <result property="userName" column="USER_NAME"/>
+    </resultMap>
+
+    <select id="selectUserNameById" parameterType="long" resultMap="LayoutMap">
+        SELECT USER_ID, USER_NAME
+        FROM TB_USER
+        WHERE USER_ID = #{userId}
     </select>
 
 </mapper>

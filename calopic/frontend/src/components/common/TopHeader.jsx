@@ -8,14 +8,17 @@ import axios from 'axios';
 
 export default function TopHeader() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
       .get('http://localhost:18090/api/layout/header', { withCredentials: true })
-      .then(res => setUserId(res.data?.userId ?? null))
-      .catch(() => setUserId(null))
+      .then(res => {
+        const name = res.data?.userName ?? res.data?.USER_NAME ?? res.data?.user_name;
+        setUserName(name);
+      })
+      .catch(() => setUserName(null))
       .finally(() => setLoading(false));
   }, []);
 
@@ -34,7 +37,7 @@ export default function TopHeader() {
 
   const displayText = loading
     ? '불러오는 중...'
-    : (userId ? `USER_ID: ${userId}` : '알 수 없는 사용자');
+    : (userName ? userName : '알 수 없는 사용자');
 
   return (
     <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
