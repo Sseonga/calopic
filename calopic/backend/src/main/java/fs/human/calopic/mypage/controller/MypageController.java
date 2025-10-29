@@ -1,5 +1,6 @@
 package fs.human.calopic.mypage.controller;
 
+import fs.human.calopic.mypage.dto.PasswordChangeRequest;
 import fs.human.calopic.mypage.service.MypageService;
 import fs.human.calopic.mypage.vo.MypageVO;
 import jakarta.servlet.http.HttpSession;
@@ -55,6 +56,49 @@ public class MypageController {
             // 간단한 예외 처리 (실제로는 로깅 등을 추가해야 함)
             System.err.println("신체 정보 저장 오류: " + e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "저장 중 오류가 발생했습니다."));
+        }
+    }
+
+
+    // ️ 비밀번호 변경 API 추가
+    @PutMapping("/password")
+    public ResponseEntity<Map<String, Object>> changeMyPassword(
+            @RequestBody PasswordChangeRequest request, // ⭐️ 요청 DTO 사용
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("LOGIN_USER_ID");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+
+        try {
+            // ⭐️ Service 호출
+            mypageService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
+            return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 성공적으로 변경되었습니다."));
+        } catch (RuntimeException e) { // ⭐️ Service에서 발생시킨 예외 처리 (예: 비번 불일치)
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("비밀번호 변경 중 서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "비밀번호 변경 중 오류가 발생했습니다."));
+        }
+    }
+
+    // ️ 회원 탈퇴 API 추가
+    @DeleteMapping("/account")
+    public ResponseEntity<Map<String, Object>> withdrawMyAccount(HttpSession session) {
+        Long userId = (Long) session.getAttribute("LOGIN_USER_ID");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+
+        try {
+            // ⭐️ Service 호출
+            mypageService.withdrawAccount(userId);
+            session.invalidate(); // ⭐️ 세션 무효화 (로그아웃 처리)
+            return ResponseEntity.ok(Map.of("success", true, "message", "회원 탈퇴가 완료되었습니다."));
+        } catch (Exception e) {
+            System.err.println("회원 탈퇴 중 서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "회원 탈퇴 처리 중 오류가 발생했습니다."));
         }
     }
 }

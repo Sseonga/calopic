@@ -93,30 +93,95 @@ const BodyInfoForm = ({ initialData, onSave }) => {
 };
 
 // 개인 정보 수정 폼 컴포넌트
-const PersonalInfoForm = ({ userId }) => {
+const PersonalInfoForm = ({ userId, onPasswordChange, onWithdraw }) => {
+    // ️ 비밀번호 입력 값을 관리할 state 추가
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+    });
+
+    //  비밀번호 입력 필드 변경 핸들러
+    const handlePasswordChangeInput = (e) => { // 함수 이름 변경 (handleChange 중복 방지)
+        const { name, value } = e.target;
+        setPasswordData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // ️ 비밀번호 변경 폼 제출 핸들러
+    const handlePasswordSubmit = (e) => {
+        e.preventDefault();
+        // 새 비밀번호 확인
+        if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+            alert('새 비밀번호가 일치하지 않습니다.');
+            return;
+        }
+        if (!passwordData.currentPassword || !passwordData.newPassword) {
+            alert('현재 비밀번호와 새 비밀번호를 모두 입력해주세요.');
+            return;
+        }
+        // 부모 컴포넌트의 비밀번호 변경 함수 호출
+        onPasswordChange(passwordData.currentPassword, passwordData.newPassword);
+        // 성공 여부와 관계없이 입력 필드 초기화 (선택적)
+        setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+    };
+
+    // ️ 탈퇴하기 클릭 핸들러
+    const handleWithdrawClick = (e) => {
+        e.preventDefault(); // 기본 링크 동작 방지
+        // 사용자에게 재확인
+        if (window.confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+            onWithdraw(); // 부모 컴포넌트의 탈퇴 함수 호출
+        }
+    };
+
     return (
-        <form className="mypage-form">
+        // ️ form 태그에 onSubmit 연결
+        <form className="mypage-form" onSubmit={handlePasswordSubmit}>
             <div className="form-item">
                 <label>아이디</label>
+                {/* ️ props로 받은 userId 표시 */}
                 <span className="id-text">{userId || '아이디 정보 없음'}</span>
             </div>
             <div className="form-item">
                 <label>비밀번호 확인</label>
-                <input type="password" name="currentPassword" className="input-field"/>
+                {/* ️ name, value, onChange 추가 */}
+                <input
+                    type="password"
+                    name="currentPassword"
+                    className="input-field"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChangeInput} // 핸들러 이름 변경됨
+                    required // 필수 입력 필드
+                />
             </div>
             <div className="form-item">
                 <label>새 비밀번호</label>
-                <input type="password" name="newPassword" className="input-field"/>
+                <input
+                    type="password"
+                    name="newPassword"
+                    className="input-field"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChangeInput}
+                    required
+                />
             </div>
             <div className="form-item">
                 <label>새 비밀번호 확인</label>
-                <input type="password" name="confirmNewPassword" className="input-field"/>
+                <input
+                    type="password"
+                    name="confirmNewPassword"
+                    className="input-field"
+                    value={passwordData.confirmNewPassword}
+                    onChange={handlePasswordChangeInput}
+                    required
+                />
             </div>
             <div className="form-button-container">
                 <button type="submit" className="form-submit-button">변경</button>
             </div>
             <div className="withdraw-link-container">
-                <a href="#!" className="withdraw-link">탈퇴하기</a>
+                {/* ️ a 태그 대신 button 사용 및 onClick 연결 */}
+                <button type="button" onClick={handleWithdrawClick} className="withdraw-link">탈퇴하기</button>
             </div>
         </form>
     );
@@ -192,13 +257,64 @@ const PageMypage = () => {
         }
     };
 
+    //   비밀번호 변경 함수 추가 (API 호출)
+    const handlePasswordChange = async (currentPassword, newPassword) => {
+        try {
+            // ️ API 경로는 백엔드에 만들 경로로 수정해야 합니다. (예: /api/mypage/password)
+            const response = await axios.put('http://localhost:18090/api/mypage/password',
+                { currentPassword, newPassword }, // 요청 본문
+                { withCredentials: true }
+            );
+            if (response.data.success) {
+                alert(response.data.message || '비밀번호가 변경되었습니다.');
+            } else {
+                alert(response.data.message || '비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
+            }
+        } catch (error) {
+            console.error("비밀번호 변경 중 오류 발생:", error);
+            if (error.response && error.response.status === 401) {
+                alert("로그인이 필요합니다.");
+                navigate('/login');
+            } else if (error.response && error.response.data && error.response.data.message) {
+                alert(`오류: ${error.response.data.message}`); // 백엔드 에러 메시지 표시
+            } else {
+                alert('비밀번호 변경 중 오류가 발생했습니다.');
+            }
+        }
+    };
+
+    // ️ 2. 회원 탈퇴 함수 추가 (API 호출)
+    const handleWithdraw = async () => {
+        try {
+            // ️ API 경로는 백엔드에 만들 경로로 수정해야 합니다. (예: /api/mypage/account)
+            const response = await axios.delete('http://localhost:18090/api/mypage/account', {
+                withCredentials: true
+            });
+            if (response.data.success) {
+                alert(response.data.message || '회원 탈퇴가 완료되었습니다.');
+                localStorage.clear(); // ️ 로컬 스토리지 비우기
+                navigate('/login'); // ️ 로그인 페이지로 이동
+            } else {
+                alert(response.data.message || '회원 탈퇴에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error("회원 탈퇴 중 오류 발생:", error);
+            if (error.response && error.response.status === 401) {
+                alert("로그인이 필요합니다.");
+                navigate('/login');
+            } else {
+                alert('회원 탈퇴 중 오류가 발생했습니다.');
+            }
+        }
+    };
+
     //  calculateBMR 함수를 Mifflin-St Jeor 함수 호출로 변경
     const calculatedBMR = userInfo ? calculateMifflinStJeorBMR(
         userInfo.userGender,
         userInfo.userWeight,
         userInfo.userHeight
         // 나이는 기본값 30 사용
-    ) : 'XXX'; // userInfo가 로드되지 않았으면 'XXX' 표시
+    ) : '-'; // userInfo가 로드되지 않았으면 'XXX' 표시
 
     const tabItems = [
         {
@@ -210,8 +326,12 @@ const PageMypage = () => {
         {
             key: 'personalInfo',
             label: '개인 정보 수정',
-            // ️ PersonalInfoForm에 email prop 전달
-            children: <PersonalInfoForm userId={userData.userId} />,
+            // ️  PersonalInfoForm에 필요한 props 전달
+            children: <PersonalInfoForm
+                userId={userData.userId} // 아이디 전달
+                onPasswordChange={handlePasswordChange} // 비밀번호 변경 함수 전달
+                onWithdraw={handleWithdraw} // 회원 탈퇴 함수 전달
+            />,
         },
     ];
 

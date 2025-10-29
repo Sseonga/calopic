@@ -19,4 +19,9 @@ public interface UserDAO {
     // 비밀번호 변경
     int updatePasswordByUserName(@Param("userName") String userName,
                                  @Param("hashedPwd") String hashedPwd);
+
+    // 마이페이지 비밀번호 변경 및 탈퇴
+    UserVO findUserById(@Param("userId") Long userId);
+    int updatePasswordById(@Param("userId") Long userId, @Param("hashedPwd") String hashedPwd);
+    int deleteUserById(@Param("userId") Long userId);
 }
