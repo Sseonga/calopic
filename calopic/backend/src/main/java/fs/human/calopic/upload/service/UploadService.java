@@ -10,4 +10,6 @@ public interface UploadService {
     UploadVO getFoodByName(String foodName);
 
     List<UploadVO> getFoodsByYoloIds(List<String> yoloIds);
+
+    UploadVO getUserGender(String userId);
 }

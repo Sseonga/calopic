@@ -32,4 +32,10 @@ public class UploadServiceImpl implements UploadService {
         if (yoloIds == null || yoloIds.isEmpty()) return List.of();
         return uploadDAO.selectFoodByYoloIds(yoloIds);
     }
+
+    @Override
+    public UploadVO getUserGender(String userId) {
+        if (userId == null || userId.isBlank()) return null;
+        return uploadDAO.selectUserGender(userId);
+    }
 }

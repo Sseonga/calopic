@@ -1,9 +1,10 @@
 // src/pages/PageUpload/components/DietNutrientInfo.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import axios from 'axios';
 import CustomProgressbar1 from '../common/CustomProgressbar1';
 
 const COLORS = {
-  calories: '#ff8486',  // 6자리 권장
+  calories: '#ff8486',
   protein:  '#36c96d',
   carbs:    '#b37feb',
   fat:      '#ffd08a',
@@ -11,8 +12,27 @@ const COLORS = {
 };
 
 const clamp = (v) => Math.max(0, Math.min(100, Math.round(v)));
-const toPctRaw = (v, g) => (g > 0 ? (v / g) * 100 : 0);     // 캡 없음
-const toPctCap = (v, g) => (g > 0 ? clamp((v / g) * 100) : 0); // 0~100 캡
+const toPctRaw = (v, g) => (g > 0 ? (v / g) * 100 : 0);
+const toPctCap = (v, g) => (g > 0 ? clamp((v / g) * 100) : 0);
+
+// 남녀 기본 목표치 매핑
+const GOALS_BY_GENDER = {
+  gender01: {  // 남자
+    calories: 2500,
+    protein:  65,
+    carbs:    325,
+    fat:      69,
+  },
+  gender02: {  // 여자
+    calories: 2000,
+    protein:  55,
+    carbs:    260,
+    fat:      55,
+  },
+};
+
+// 안전한 기본값
+const DEFAULT_GOALS = { calories: 2000, protein: 55, carbs: 275, fat: 54 };
 
 /* donut */
 function Donut({ size=220, thickness=20, segments=[], centerText={ title:'총', value:0, unit:'kcal' } }) {
@@ -65,10 +85,60 @@ function Donut({ size=220, thickness=20, segments=[], centerText={ title:'총', 
   );
 }
 
-export default function DietNutrientInfo({ totals, goals }) {
-  const G = goals || { calories: 2000, protein: 55, carbs: 275, fat: 54 };
+export default function DietNutrientInfo({ totals, goals, userId }) {
+  const [genderCode, setGenderCode] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 1) 원본 퍼센트(캡 없음)
+  // 성별 정보 로드
+ useEffect(() => {
+  let mounted = true;
+
+  const resolveUserId = () => {
+    if (userId) return userId;
+    return localStorage.getItem('memberId')
+        || localStorage.getItem('userId')
+        || localStorage.getItem('USER_ID')
+        || null;
+  };
+
+  (async () => {
+    try {
+      const uid = resolveUserId();
+      if (!uid) { if (mounted) { setGenderCode(null); setLoading(false); } return; }
+
+      const token = localStorage.getItem('accessToken');
+      const url = `http://localhost:18090/api/upload/user/info/${uid}`;
+      console.log('[DietNutrientInfo] request uid=', uid, 'url=', url);
+      const res = await axios.get(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        withCredentials: true,
+      });
+      console.log('[DietNutrientInfo] response data=', res.data);
+
+      // 백엔드에서 Map(userGender)로 내려줌
+      let code = res.data?.userGender || res.data?.user_gender || res.data?.genderCode;
+      if (typeof code === 'string') code = code.trim().toLowerCase(); // "GENDER01" 방지
+      if (mounted) setGenderCode(code || null);
+    } catch (e) {
+      console.error('유저 정보 조회 실패:', e?.response?.status, e?.response?.data || e.message);
+      if (mounted) setGenderCode(null);
+    } finally {
+      if (mounted) setLoading(false);
+    }
+  })();
+
+  return () => { mounted = false; };
+}, [userId]);
+
+
+  // 최종 목표치 결정: props > gender 매핑 > 기본
+  const G = useMemo(() => {
+    if (goals && typeof goals === 'object') return goals;
+    if (genderCode && GOALS_BY_GENDER[genderCode]) return GOALS_BY_GENDER[genderCode];
+    return DEFAULT_GOALS;
+  }, [goals, genderCode]);
+
+  // 퍼센트 계산
   const pRaw = useMemo(() => {
     if (!totals) return { calories:0, protein:0, carbs:0, fat:0 };
     return {
@@ -79,7 +149,6 @@ export default function DietNutrientInfo({ totals, goals }) {
     };
   }, [totals, G]);
 
-  // 2) 표시/도넛/막대 채움용(0~100)
   const pCap = useMemo(() => ({
     calories: toPctCap(totals?.calories ?? 0, G.calories),
     protein:  toPctCap(totals?.protein  ?? 0, G.protein),
@@ -124,7 +193,13 @@ export default function DietNutrientInfo({ totals, goals }) {
 
   return (
     <div style={{ background:'#f6fff6', borderRadius:16, padding:16, boxShadow:'0 4px 16px rgba(0,0,0,0.06)' }}>
-      <h3 style={{ margin:'0 0 12px' }}>식단 영양소 정보</h3>
+      <h3 style={{ margin:'0 0 12px' }}>
+        식단 영양소 정보
+        {loading ? <span style={{ marginLeft:8, color:'#999', fontSize:12 }}>(유저 정보 불러오는 중)</span>
+                 : genderCode ? <span style={{ marginLeft:8, color:'#36c96d', fontSize:12 }}>
+                     {genderCode === 'gender01' ? '남성 기준 목표치' : genderCode === 'gender02' ? '여성 기준 목표치' : '기본 목표치'}
+                   </span> : <span style={{ marginLeft:8, color:'#999', fontSize:12 }}>(기본 목표치 적용)</span>}
+      </h3>
 
       <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:16, alignItems:'center' }}>
         <Donut
@@ -144,7 +219,6 @@ export default function DietNutrientInfo({ totals, goals }) {
                 <div style={{ marginBottom:4, color:'#999' }}>
                   {b.value.toLocaleString()} / {b.goal.toLocaleString()} {b.unit}
                 </div>
-                {/* 막대는 0~100으로 채움. CustomProgressbar1이 내부에서 cap 처리하도록 percentRaw를 넘겨도 됨 */}
                 <CustomProgressbar1
                   percent={b.percentRaw}
                   status={b.value > b.goal ? 'exception' : 'active'}
@@ -154,7 +228,6 @@ export default function DietNutrientInfo({ totals, goals }) {
                   showInfo={false}
                 />
               </div>
-              {/* 텍스트는 원본 퍼센트로 표시, 100% 이상이면 빨간색 */}
               <div style={{ color: b.percentRaw >= 100 ? 'red' : '#999', fontWeight:600 }}>
                 {Math.round(b.percentRaw)}%
               </div>

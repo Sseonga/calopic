@@ -24,8 +24,13 @@ export default function ImgUpload({
       const next = info.fileList.slice(0, maxCount);
       setFileList(next);
       onChange && onChange(next);
+
+      // 썸네일 개별 삭제 연동
+      if (info.file?.status === 'removed') {
+        onDetections && onDetections({ type: 'removeByUid', uid: info.file.uid });
+      }
     },
-    [maxCount, onChange]
+    [maxCount, onChange, onDetections]
   );
 
   const draggerProps = {
@@ -40,23 +45,20 @@ export default function ImgUpload({
   };
 
   const handleBeforeUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const formData = new FormData();
+  formData.append('file', file);
 
     try {
       const res = await axios.post('http://localhost:8000/detect', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       const detections = res.data?.detections || [];
-      console.log('AI 분석 결과:', detections);
-      onDetections && onDetections(detections);   // ← 상위로 올림
+      const withUid = detections.map(d => ({ ...d, sourceUid: file.uid })); // ← 핵심
+      onDetections && onDetections({ type: 'add', items: withUid });
     } catch (error) {
-        console.error('AI 분석 실패:');
-        onDetections && onDetections([]);           // 실패 시 빈 배열
+      onDetections && onDetections({ type: 'add', items: [] });
     }
-
-    // 업로드 막기 (네트워크 전송 X)
-    return false;
+    return false; // 네트워크 업로드 차단
   };
 
   return (
@@ -99,6 +101,7 @@ export default function ImgUpload({
         <div style={{ flex: 1 }}>
           <CustomUpload2
             // action은 전달돼도 customRequest가 네트워크를 막습니다
+            className="img-upload-card"
             action={action}
             fileList={fileList}
             onChange={handleChange}

@@ -21,6 +21,8 @@ export default function CustomUpload2({
   crop = { rotationSlider: true },
   childrenText = '+ Upload',
   name = 'file',
+  className,
+  style,
 }) {
   const [internalList, setInternalList] = useState(defaultFileList);
   const isControlled = Array.isArray(fileList);
@@ -69,6 +71,8 @@ export default function CustomUpload2({
         name={name}
         beforeUpload={beforeUpload}     // Dragger와 동일하게 인터셉트
         customRequest={noNetworkCustomRequest} // 실제 POST 방지
+        className={className}
+        style={style}
       >
         {currentList.length < maxCount && childrenText}
       </Upload>

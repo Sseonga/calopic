@@ -9,7 +9,8 @@ import CustomSelect2 from '../common/CustomSelect2';
 const IMG_CARROT = '/images/carrot.jpg';
 
 export default function DietInfo({ onChange, onTotalsChange, detections = [] }) {
-  const [items, setItems] = useState([]);
+  const [autoItems, setAutoItems] = useState([]);    // 감지 기반
+  const [manualItems, setManualItems] = useState([]); // 수동 추가
   const [foodOptions, setFoodOptions] = useState([]);
   const [form] = Form.useForm();
   const [unit, setUnit] = useState('g');
@@ -25,63 +26,57 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
 
    // *** AI 탐지 결과(detections)가 바뀔 때 자동으로 DB에서 음식정보 불러오기 ***
   useEffect(() => {
-    if (!detections || detections.length === 0) return;
+    if (!detections || detections.length === 0) {
+      setAutoItems([]);
+      return;
+    }
 
-    // 1) class_id 목록만 추출
-    // const classIds = [...new Set(detections.map(d => d.class_id))];
-    const classIds  = [...new Set(detections.map(d => d.class_id))];
+    const classIds   = [...new Set(detections.map(d => d.class_id))];
     const classNames = [...new Set(detections.map(d => d.class_name))];
 
-    // 2) DB에서 yolo_id와 매칭되는 음식 가져오기
     (async () => {
       try {
-        // const { data } = await axios.post('http://localhost:18090/api/upload/foods/by-yolo', {
-        //   classIds: classIds,
-        // });
-        console.log('[by-yolo] req', { classIds, classNames });
         const { data } = await axios.post('http://localhost:18090/api/upload/foods/by-yolo', {
           classIds, classNames
         });
-        console.log('[by-yolo] res', data?.length, data);
 
-        // 3) 이미 추가된 항목 중복 제거
-        const existingNames = new Set(items.map(it => it.name));
-        const newItems = data
-          .filter(f => !existingNames.has(f.foodName))
-          .map(f => ({
-            id: crypto.randomUUID(),
-            foodId: f.foodId,
-            name: f.foodName,
-            kcalPer100: Number(f.foodKcal) || 0,
-            proteinPer100: Number(f.foodProtein) || 0,
-            carbsPer100: Number(f.foodCarbo) || 0,
-            fatPer100: Number(f.foodFat) || 0,
-            amount: 100, // 기본값
-            unit: 'g',
-            img: IMG_CARROT,
-          }));
+        // foodName ↔ detection 매칭으로 sourceUid 부여
+        const findSourceUid = (food) => {
+          const hit = detections.find(d =>
+            String(d.class_id) === String(food.yoloId) || // 있으면
+            d.class_name === food.foodName                // 또는 이름 매칭
+          );
+          return hit?.sourceUid ?? null;
+        };
 
-        if (newItems.length > 0) {
-          // const next = [...items, ...newItems];
-          // setItems(next);
-          // onChange?.(next);
-           setItems(prev => {
-           const exist = new Set(prev.map(p => p.name));
-           const add = newItems.filter(n => !exist.has(n.name));
-           const next = [...prev, ...add];
-           onChange?.(next);
-           return next;
-         });
-       } else {
-         console.warn('[by-yolo] 매칭 0건 — DB YOLO_ID 혹은 이름 매핑 확인 필요');
-        }
+        const uniqueByName = new Map();
+        (data || []).forEach(f => {
+          if (!uniqueByName.has(f.foodName)) {
+            uniqueByName.set(f.foodName, {
+              id: crypto.randomUUID(),
+              sourceUid: findSourceUid(f),         // ← 핵심: 어느 썸네일에서 온 건지
+              foodId: f.foodId,
+              name: f.foodName,
+              kcalPer100: Number(f.foodKcal) || 0,
+              proteinPer100: Number(f.foodProtein) || 0,
+              carbsPer100: Number(f.foodCarbo) || 0,
+              fatPer100: Number(f.foodFat) || 0,
+              amount: 100,
+              unit: 'g',
+              img: '/images/carrot.jpg',
+            });
+          }
+        });
+
+        setAutoItems(Array.from(uniqueByName.values())); // 교체
       } catch (e) {
-        // console.error('음식정보 불러오기 실패:', e);
         console.error('음식정보 불러오기 실패:', e?.response?.status, e?.response?.data, e);
+        setAutoItems([]);
       }
     })();
-  }, [detections]); // ← AI 분석 결과 변경될 때마다 자동 실행
+  }, [detections]);
 
+  const items = useMemo(() => [...autoItems, ...manualItems], [autoItems, manualItems]);
   const toGram = (amount, u) => (!amount ? 0 : u === 'kg' ? amount * 1000 : u === '개' ? amount * 100 : amount);
 
   const totals = useMemo(() => {
@@ -103,19 +98,27 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
 
   useEffect(() => { onTotalsChange?.(totals); }, [totals, onTotalsChange]);
 
-  const emit = (next) => { setItems(next); onChange?.(next); };
-  const handleRemove = (id) => emit(items.filter((it) => it.id !== id));
-  const handleAmountChange = (id, amount) => emit(items.map((it) => (it.id === id ? { ...it, amount: amount ?? 0 } : it)));
+  const emitManual = (next) => setManualItems(next);
+  const handleRemove = (id) => {
+    // 자동 항목도 카드 X로 없애고 싶다면 autoItems에서도 빼줍니다.
+    setAutoItems(prev => prev.filter(it => it.id !== id));
+    setManualItems(prev => prev.filter(it => it.id !== id));
+  };
+  const handleAmountChange = (id, amount) => {
+    const updater = it => (it.id === id ? { ...it, amount: amount ?? 0 } : it);
+    setAutoItems(prev => prev.map(updater));
+    setManualItems(prev => prev.map(updater));
+  };
 
   const handleAdd = async () => {
     const { name, amount } = await form.validateFields();
     const res = await axios.get(`http://localhost:18090/api/upload/foods/${encodeURIComponent(name)}`);
     const f = res.data;
-
-    emit([
-      ...items,
+    emitManual([
+      ...manualItems,
       {
         id: crypto.randomUUID(),
+        sourceUid: null, // 수동 추가
         foodId: f.foodId,
         name: f.foodName,
         kcalPer100: Number(f.foodKcal)      || 0,
@@ -124,7 +127,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
         fatPer100:     Number(f.foodFat)     || 0,
         amount: Number(amount),
         unit,
-        img: IMG_CARROT,
+        img: '/images/carrot.jpg',
       },
     ]);
     form.resetFields(); setUnit('g'); setSelectedFood(null);

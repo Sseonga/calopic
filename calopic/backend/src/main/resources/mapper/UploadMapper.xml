@@ -18,6 +18,9 @@
         <result property="foodSugar"   column="FOOD_SUGAR"   javaType="java.math.BigDecimal"/>
         <result property="foodNatrium" column="FOOD_NATRIUM" javaType="java.math.BigDecimal"/>
         <result property="yoloId" column="YOLO_ID" jdbcType="VARCHAR"/>
+
+        <result property="userId"      column="USER_ID"/>
+        <result property="userGender"  column="USER_GENDER"/>
     </resultMap>
 
     <!-- 문자열 FOOD_WEIGHT에서 숫자만 추출해 정수로 내려줌 -->
@@ -61,4 +64,18 @@
         AND YOLO_MODEL_ID = #{modelId}
         -->
     </select>
+
+    <!-- 유저 성별 조회 -->
+    <!-- 유저 성별 조회: USER_NAME → USER_ID 매핑 후 INFO 조인 -->
+    <select id="selectUserGender" parameterType="string" resultMap="FoodMap">
+        SELECT
+        U.USER_ID                    AS USER_ID,
+        TRIM(UI.USER_GENDER)         AS USER_GENDER
+        FROM TB_USER U
+        JOIN TB_USER_INFO UI ON UI.USER_ID = U.USER_ID
+        WHERE U.USER_NAME = #{userId}   <!-- 프론트에서 넘기는 값 = 로그인 아이디(예: kimy9534) -->
+    </select>
+
+
+
 </mapper>
