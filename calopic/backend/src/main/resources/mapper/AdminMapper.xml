@@ -41,4 +41,57 @@
         ORDER BY u.USER_ID ASC
     </select>
 
+    <delete id="deleteUsers">
+        DELETE FROM TB_USER
+        WHERE USER_ID IN
+        <foreach collection="userIds" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=NUMERIC}
+        </foreach>
+    </delete>
+
+
+
+    <resultMap id="FoodMap" type="fs.human.calopic.admin.vo.AdminVO">
+        <id column="FOOD_ID" property="foodId"/>
+        <result column="FOOD_NAME" property="foodName"/>
+        <result column="FOOD_KCAL" property="foodKcal"/>
+        <result column="FOOD_CARBO" property="foodCarbo"/>
+        <result column="FOOD_PROTEIN" property="foodProtein"/>
+        <result column="FOOD_FAT" property="foodFat"/>
+    </resultMap>
+
+    <select id="selectClasses" resultMap="FoodMap">
+        SELECT FOOD_ID, FOOD_NAME, FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT
+        FROM TB_FOOD
+        ORDER BY FOOD_ID ASC
+    </select>
+
+    <insert id="insertClass" parameterType="fs.human.calopic.admin.vo.AdminVO">
+        INSERT INTO TB_FOOD (
+        FOOD_ID, FOOD_NAME, FOOD_WEIGHT,
+        FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT, CREATED_DATE
+        ) VALUES (
+        #{foodId}, #{foodName}, '100g',
+        #{foodKcal}, #{foodCarbo}, #{foodProtein}, #{foodFat}, SYSDATE
+        )
+    </insert>
+
+    <select id="selectNextFoodId" resultType="long">
+        SELECT NVL(MAX(FOOD_ID), 0) + 1 FROM TB_FOOD
+    </select>
+
+    <select id="selectFoodNames" resultType="string">
+        SELECT FOOD_NAME
+        FROM TB_FOOD
+        ORDER BY FOOD_NAME ASC
+    </select>
+
+    <delete id="deleteClasses">
+        DELETE FROM TB_FOOD
+        WHERE FOOD_ID IN
+        <foreach collection="classIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
 </mapper>

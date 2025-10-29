@@ -15,4 +15,11 @@ public class AdminVO {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate; // CREATED_DATE
+
+    private Long foodId;
+    private String foodName;
+    private Double foodKcal;
+    private Double foodCarbo;
+    private Double foodProtein;
+    private Double foodFat;
 }
