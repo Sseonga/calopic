@@ -69,4 +69,17 @@
         )
     </insert>
 
+    <!--    마이페이지 비밀번호 변경 및 탈퇴-->
+    <select id="findUserById" parameterType="long" resultType="fs.human.calopic.user.vo.UserVO">
+        SELECT * FROM TB_USER WHERE USER_ID = #{userId}
+    </select>
+
+    <update id="updatePasswordById">
+        UPDATE TB_USER SET USER_PASSWORD = #{hashedPwd}, UPDATED_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <delete id="deleteUserById" parameterType="long">
+        DELETE FROM TB_USER WHERE USER_ID = #{userId}
+    </delete>
 </mapper>

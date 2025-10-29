@@ -20,4 +20,6 @@ public interface MypageMapper {
      * @return 영향을 받은 행의 수 (1이면 성공)
      */
     int upsertMypage(MypageVO userInfo);
+
+    int deleteUserInfoByUserId(@Param("userId") Long userId);
 }

@@ -45,4 +45,8 @@
                            )
     </update>
 
+    <!--    마이페이지 회원 탈퇴-->
+    <delete id="deleteUserInfoByUserId" parameterType="long">
+        DELETE FROM TB_USER_INFO WHERE USER_ID = #{userId}
+    </delete>
 </mapper>
