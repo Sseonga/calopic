@@ -172,32 +172,119 @@ const PageCalculator = () => {
   //  bmrValue나 activityLevel이 변경될 때마다 자동으로 다시 계산됨
   const calculatedTDEE = Math.round(bmrValue * activityLevel);
 
-  //  useMemo를 사용하여 총 영양소 합계 계산 (기존 totalSelectedCalories 확장)
-  const { totalCalories, totalCarbs, totalProtein, totalFat } = useMemo(() => {
-    // reduce를 사용해 selectedFoods 배열을 순회하며 모든 값을 누적
-    const totals = selectedFoods.reduce((acc, food) => {
-      // 100g당 기본값과 수량(multiplier)을 곱함
-      acc.calories += (food.baseCalories || 0) * food.multiplier;
-      acc.carbs += (food.baseCarbs || 0) * food.multiplier;
-      acc.protein += (food.baseProtein || 0) * food.multiplier;
-      acc.fat += (food.baseFat || 0) * food.multiplier;
-      return acc;
-    }, {
-      // ️ 각 항목의 초기값을 0으로 설정
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-    });
 
-    // 계산된 값을 반환 (칼로리는 반올림, 나머지는 소수점 1자리)
-    return {
-      totalCalories: Math.round(totals.calories),
-      totalCarbs: totals.carbs.toFixed(1),
-      totalProtein: totals.protein.toFixed(1),
-      totalFat: totals.fat.toFixed(1),
-    };
-  }, [selectedFoods]); // ️ selectedFoods가 변경될 때만 이 함수 실행
+
+    //  총 영양소 합계 계산 (useMemo): 숫자(g)로 반환하도록 수정
+    const nutrientTotals = useMemo(() => {
+        // reduce를 사용해 selectedFoods 배열을 순회하며 모든 값을 누적
+        const totals = selectedFoods.reduce((acc, food) => {
+            const multiplier = food.multiplier || 1;
+            acc.calories += (food.baseCalories || 0) * multiplier;
+            acc.carbs += (food.baseCarbs || 0) * multiplier;
+            acc.protein += (food.baseProtein || 0) * multiplier;
+            acc.fat += (food.baseFat || 0) * multiplier;
+            return acc;
+        }, { calories: 0, carbs: 0, protein: 0, fat: 0 });
+
+        // 계산된 '숫자' 값을 반환
+        return {
+            totalCalories: Math.round(totals.calories),
+            totalCarbs: totals.carbs,
+            totalProtein: totals.protein,
+            totalFat: totals.fat,
+        };
+    }, [selectedFoods]); // ️ selectedFoods가 변경될 때만 이 함수 실행
+
+    //  영양소 비율(%)과 조언 메시지를 계산하는 useMemo 추가
+    const nutrientAdvice = useMemo(() => {
+        const { totalCarbs, totalProtein, totalFat } = nutrientTotals;
+
+        // 각 영양소의 칼로리 계산 (탄수화물: 4, 단백질: 4, 지방: 9 kcal/g)
+        const carbsCalories = totalCarbs * 4;
+        const proteinCalories = totalProtein * 4;
+        const fatCalories = totalFat * 9;
+        const totalNutrientCalories = carbsCalories + proteinCalories + fatCalories;
+
+        // 섭취한 음식이 없을 때 기본 메시지
+        if (totalNutrientCalories === 0) {
+            const defaultMessage = "음식을 추가하여 비율을 계산하세요.";
+            return {
+                carbs: { percent: 0, message: defaultMessage },
+                protein: { percent: 0, message: defaultMessage },
+                fat: { percent: 0, message: defaultMessage },
+            };
+        }
+
+        // ️ 목표 비율 설정
+        const targetRatios = {
+            carbs: 0.50,   // 50%
+            protein: 0.20, // 20%
+            fat: 0.30,     // 30%
+        };
+
+        // 현재 비율 계산
+        const carbsPercent = (carbsCalories / totalNutrientCalories);
+        const proteinPercent = (proteinCalories / totalNutrientCalories);
+        const fatPercent = (fatCalories / totalNutrientCalories);
+
+        // 조언 생성 함수
+        // (편차 5% (0.05)를 기준으로 메시지 변경)
+        const getAdvice = (currentPercent, targetPercent, name) => {
+            const deviation = currentPercent - targetPercent;
+            const deviationPercent = Math.round(Math.abs(deviation) * 100);
+
+            if (deviation > 0.05) { // 5% 초과
+                return `*${name} 비율이 ${deviationPercent}% 높습니다. 섭취를 줄이는 것이 좋습니다.`;
+            } else if (deviation < -0.05) { // 5% 미만
+                return `*${name} 비율이 ${deviationPercent}% 낮습니다. 섭취를 늘리는 것이 좋습니다.`;
+            }
+            return `*${name} 비율이 적절합니다.`; // 5% 이내
+        };
+
+        return {
+            carbs: {
+                percent: Math.round(carbsPercent * 100),
+                message: getAdvice(carbsPercent, targetRatios.carbs, "탄수화물")
+            },
+            protein: {
+                percent: Math.round(proteinPercent * 100),
+                message: getAdvice(proteinPercent, targetRatios.protein, "단백질")
+            },
+            fat: {
+                percent: Math.round(fatPercent * 100),
+                message: getAdvice(fatPercent, targetRatios.fat, "지방")
+            }
+        };
+
+    }, [nutrientTotals]); //  nutrientTotals가 바뀔 때마다 다시 계산
+
+    const calorieAdviceMessage = useMemo(() => {
+        // TDEE가 계산되지 않았거나(0) 신체 정보가 없으면 기본 메시지 표시
+        if (!userInfo || !userInfo.userGoal || calculatedTDEE === 0) {
+            return "*신체 정보를 먼저 입력해주세요.";
+        }
+
+        const tdee = calculatedTDEE; // 문제 없음!
+        let minRange, maxRange;
+
+        // 마이페이지에서 설정한 목표(userGoal)에 따라 범위 계산
+        switch (userInfo.userGoal) {
+            case 'GOAL01': // 체중증가
+                minRange = tdee + 200;
+                maxRange = tdee + 300;
+                return `*체중 증가를 위해 약 ${minRange}~${maxRange}Kcal 섭취를 권장합니다.`;
+            case 'GOAL03': // 다이어트
+                minRange = tdee - 700;
+                maxRange = tdee - 500;
+                return `*다이어트를 목표로 한다면 약 ${minRange}~${maxRange}Kcal를 유지하십시오.`;
+            case 'GOAL02': // 유지
+            default:
+                minRange = tdee - 200;
+                // ⭐️ 3. 여기 return 문 안에 있던 <p> 태그는 JSX 문법 오류이므로 제거합니다.
+                maxRange = tdee + 200;
+                return `*체중 유지를 위해 약 ${minRange}~${maxRange}Kcal 섭취를 권장합니다.`;
+        }
+    }, [userInfo, calculatedTDEE]);
 
   //  Filter the food data based on the search query
   const filteredFoodData = allFoodData.filter(food =>
@@ -442,8 +529,8 @@ const PageCalculator = () => {
               <div className="card statistic-card">
                   <div className="card-body">
                       <div className="statistic-title">총 음식 칼로리</div>
-                      <div className="statistic-value">{totalCalories} Kcal</div>
-                      <p className="warning-text">*다이어트를 목표로 한다면...</p>
+                      <div className="statistic-value">{nutrientTotals.totalCalories} Kcal</div>
+                      <p className="warning-text">{calorieAdviceMessage}</p>
                   </div>
               </div>
           </div>
@@ -453,26 +540,27 @@ const PageCalculator = () => {
               <div className="col col-sm-8">
                   <div className="card statistic-card">
                       <div className="card-body">
-                          <div className="statistic-title">총 단백질</div>
-                          <div className="statistic-value">{totalProtein} g</div>
-                          <p className="warning-text">*약 100g의 단백질을...</p>
+                          <div className="statistic-title">총 단백질 ({nutrientAdvice.protein.percent}%)</div>
+                          <div className="statistic-value">{nutrientTotals.totalProtein.toFixed(1)} g</div>
+                          <p className="warning-text">{nutrientAdvice.protein.message}</p>
+                      </div>
+                  </div>
+              </div>
+              <div className="col col-sm-8">
+                  <div className="card statistic-card">
+                      <div className="card-body">
+                          <div className="statistic-title">총 탄수화물 ({nutrientAdvice.carbs.percent}%)</div>
+                          <div className="statistic-value">{nutrientTotals.totalCarbs.toFixed(1)} g</div>
+                          <p className="warning-text">{nutrientAdvice.carbs.message}</p>
                       </div>
                   </div>
               </div>
               <div className="col col-sm-8">
             <div className="card statistic-card">
                 <div className="card-body">
-                    <div className="statistic-title">총 탄수화물</div>
-                    <div className="statistic-value">{totalCarbs} g</div>
-                    <p className="warning-text">*탄수화물의 비율을...</p>
-                </div>
-            </div>
-              </div>
-              <div className="col col-sm-8">
-            <div className="card statistic-card">
-                <div className="card-body">
-                    <div className="statistic-title">총 지방</div>
-                    <div className="statistic-value">{totalFat} g</div>
+                    <div className="statistic-title">총 지방 ({nutrientAdvice.fat.percent}%)</div>
+                    <div className="statistic-value">{nutrientTotals.totalFat.toFixed(1)} g</div>
+                    <p className="warning-text">{nutrientAdvice.fat.message}</p>
                 </div>
             </div>
               </div>
@@ -482,3 +570,5 @@ const PageCalculator = () => {
 };
 
 export default PageCalculator;
+
+
