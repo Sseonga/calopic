@@ -29,4 +29,17 @@ public class UploadController {
     public UploadVO getFoodByName(@PathVariable String foodName) {
         return uploadService.getFoodByName(foodName);
     }
+
+    // 추가: YOLO_ID 리스트로 조회
+    @PostMapping("/foods/by-yolo")
+    public List<UploadVO> getFoodsByYolo(@RequestBody YoloReq req) {
+        List<String> yoloIds = req.getClassIds().stream().map(String::valueOf).distinct().toList();
+        return uploadService.getFoodsByYoloIds(yoloIds);
+    }
+
+    public static class YoloReq {
+        private List<Integer> classIds;
+        public List<Integer> getClassIds() { return classIds; }
+        public void setClassIds(List<Integer> classIds) { this.classIds = classIds; }
+    }
 }

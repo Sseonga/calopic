@@ -7,14 +7,15 @@ import ImgUpload from "../../components/upload/ImgUpload";
 export default function PageUpload() {
   // 총합 객체 상태: { calories, protein, carbs, fat }
   const [totals, setTotals] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 });
+  const [detections, setDetections] = useState([]);  // ← AI 탐지 결과 저장
 
   return (
     <div>
-      <ImgUpload />
+      <ImgUpload onDetections={setDetections}/>
       <div style={{ height: 50 }} />
 
       {/* DietInfo가 totals 객체를 올려줍니다 */}
-      <DietInfo onTotalsChange={setTotals} />
+      <DietInfo onTotalsChange={setTotals} detections={detections}/>
 
       <div style={{ height: 50 }} />
 

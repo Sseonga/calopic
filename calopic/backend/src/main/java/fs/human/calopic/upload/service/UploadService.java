@@ -8,4 +8,6 @@ import java.util.List;
 public interface UploadService {
     List<UploadVO> getAllFood();
     UploadVO getFoodByName(String foodName);
+
+    List<UploadVO> getFoodsByYoloIds(List<String> yoloIds);
 }

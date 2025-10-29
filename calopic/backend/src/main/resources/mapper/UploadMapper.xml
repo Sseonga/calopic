@@ -17,6 +17,7 @@
         <result property="foodFat"     column="FOOD_FAT"     javaType="java.math.BigDecimal"/>
         <result property="foodSugar"   column="FOOD_SUGAR"   javaType="java.math.BigDecimal"/>
         <result property="foodNatrium" column="FOOD_NATRIUM" javaType="java.math.BigDecimal"/>
+        <result property="yoloId" column="YOLO_ID" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 문자열 FOOD_WEIGHT에서 숫자만 추출해 정수로 내려줌 -->
@@ -30,6 +31,7 @@
         FOOD_SUGAR,
         FOOD_NATRIUM,
         FOOD_WEIGHT,
+        YOLO_ID,
         TO_NUMBER(REGEXP_SUBSTR(FOOD_WEIGHT, '\d+')) AS FOOD_WEIGHT_GRAM
     </sql>
 
@@ -46,5 +48,17 @@
         <include refid="FoodColumns"/>
         FROM TB_FOOD
         WHERE FOOD_NAME = #{value}
+    </select>
+
+    <select id="selectFoodByYoloIds" resultMap="FoodMap" parameterType="map">
+        SELECT <include refid="FoodColumns"/>
+        FROM TB_FOOD
+        WHERE YOLO_ID IN
+        <foreach collection="yoloIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <!-- 모델별 구분이 필요하면 아래 한 줄 추가
+        AND YOLO_MODEL_ID = #{modelId}
+        -->
     </select>
 </mapper>

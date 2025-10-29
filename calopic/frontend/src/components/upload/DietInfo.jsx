@@ -8,7 +8,7 @@ import CustomSelect2 from '../common/CustomSelect2';
 
 const IMG_CARROT = '/images/carrot.jpg';
 
-export default function DietInfo({ onChange, onTotalsChange }) {
+export default function DietInfo({ onChange, onTotalsChange, detections = [] }) {
   const [items, setItems] = useState([]);
   const [foodOptions, setFoodOptions] = useState([]);
   const [form] = Form.useForm();
@@ -22,6 +22,65 @@ export default function DietInfo({ onChange, onTotalsChange }) {
       setFoodOptions(opts);
     })();
   }, []);
+
+   // *** AI 탐지 결과(detections)가 바뀔 때 자동으로 DB에서 음식정보 불러오기 ***
+  useEffect(() => {
+    if (!detections || detections.length === 0) return;
+
+    // 1) class_id 목록만 추출
+    // const classIds = [...new Set(detections.map(d => d.class_id))];
+    const classIds  = [...new Set(detections.map(d => d.class_id))];
+    const classNames = [...new Set(detections.map(d => d.class_name))];
+
+    // 2) DB에서 yolo_id와 매칭되는 음식 가져오기
+    (async () => {
+      try {
+        // const { data } = await axios.post('http://localhost:18090/api/upload/foods/by-yolo', {
+        //   classIds: classIds,
+        // });
+        console.log('[by-yolo] req', { classIds, classNames });
+        const { data } = await axios.post('http://localhost:18090/api/upload/foods/by-yolo', {
+          classIds, classNames
+        });
+        console.log('[by-yolo] res', data?.length, data);
+
+        // 3) 이미 추가된 항목 중복 제거
+        const existingNames = new Set(items.map(it => it.name));
+        const newItems = data
+          .filter(f => !existingNames.has(f.foodName))
+          .map(f => ({
+            id: crypto.randomUUID(),
+            foodId: f.foodId,
+            name: f.foodName,
+            kcalPer100: Number(f.foodKcal) || 0,
+            proteinPer100: Number(f.foodProtein) || 0,
+            carbsPer100: Number(f.foodCarbo) || 0,
+            fatPer100: Number(f.foodFat) || 0,
+            amount: 100, // 기본값
+            unit: 'g',
+            img: IMG_CARROT,
+          }));
+
+        if (newItems.length > 0) {
+          // const next = [...items, ...newItems];
+          // setItems(next);
+          // onChange?.(next);
+           setItems(prev => {
+           const exist = new Set(prev.map(p => p.name));
+           const add = newItems.filter(n => !exist.has(n.name));
+           const next = [...prev, ...add];
+           onChange?.(next);
+           return next;
+         });
+       } else {
+         console.warn('[by-yolo] 매칭 0건 — DB YOLO_ID 혹은 이름 매핑 확인 필요');
+        }
+      } catch (e) {
+        // console.error('음식정보 불러오기 실패:', e);
+        console.error('음식정보 불러오기 실패:', e?.response?.status, e?.response?.data, e);
+      }
+    })();
+  }, [detections]); // ← AI 분석 결과 변경될 때마다 자동 실행
 
   const toGram = (amount, u) => (!amount ? 0 : u === 'kg' ? amount * 1000 : u === '개' ? amount * 100 : amount);
 

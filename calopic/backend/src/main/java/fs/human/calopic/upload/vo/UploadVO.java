@@ -29,4 +29,6 @@ public class UploadVO {
     private BigDecimal foodFat;
     private BigDecimal foodSugar;
     private BigDecimal foodNatrium;
+
+    private String yoloId;
 }
