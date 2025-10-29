@@ -3,6 +3,7 @@ import { UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import './PageMypage.css';
 import { calculateMifflinStJeorBMR } from '../../utils/bmrCalculator';
+import { useNavigate } from 'react-router-dom';
 
 
 //  신체 정보 수정 폼 컴포넌트 (DB 코드 ID 사용하도록 수정)
@@ -96,8 +97,8 @@ const PersonalInfoForm = ({ userId }) => {
     return (
         <form className="mypage-form">
             <div className="form-item">
-                {/* ⭐️ props로 받은 userId 표시 */}
-                <span className="email-text">{userId || '아이디 정보 없음'}</span>
+                <label>아이디</label>
+                <span className="id-text">{userId || '아이디 정보 없음'}</span>
             </div>
             <div className="form-item">
                 <label>비밀번호 확인</label>
@@ -123,18 +124,25 @@ const PersonalInfoForm = ({ userId }) => {
 
 // 메인 마이페이지 컴포넌트
 const PageMypage = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('bodyInfo');
     // ️ 사용자 정보(닉네임, 이메일 등) state 추가
-    const [userData, setUserData] = useState({ nickname: '사용자', email: '' });
+    const [userData, setUserData] = useState({ userId: '' });
     // ️ 신체 정보 state 추가
     const [userInfo, setUserInfo] = useState(null); // 초기값은 null
 
     // ️ 백엔드에서 사용자 정보 및 신체 정보 가져오기
     useEffect(() => {
         // 임시로 localStorage에서 닉네임 가져오기 (실제로는 로그인 시 저장된 정보 사용)
-        const storedNickname = localStorage.getItem('userNickname') || 'Calopic유저';
-        const storedEmail = localStorage.getItem('userEmail') || 'xxxxx@gmail.com';
-        setUserData({ nickname: storedNickname, email: storedEmail });
+        const storedUserId = localStorage.getItem('userId');
+
+        if (!storedUserId) {
+            alert('로그인이 필요합니다.');
+            navigate('/login');
+            return;
+        }
+
+        setUserData({ userId: storedUserId });
 
         const fetchUserInfo = async () => {
             try {
@@ -147,17 +155,18 @@ const PageMypage = () => {
             } catch (error) {
                 console.error("신체 정보를 불러오는 중 오류 발생:", error);
                 if (error.response && error.response.status === 401) {
-                    alert("로그인이 필요합니다.");
-                    // 로그인 페이지로 이동하는 로직 추가
+                    alert("세션이 만료되었거나 로그인이 필요합니다. 다시 로그인해주세요.");
+                    localStorage.clear(); //  잘못된 티켓 정보 삭제
+                    navigate('/login');
                 }
                 // 에러 발생 시 초기 폼을 보여주기 위해 빈 객체 설정 (선택적)
                 setUserInfo({});
             }
         };
         fetchUserInfo();
-    }, []); // [] : 처음 한 번만 실행
+    }, [navigate]); // [] : 처음 한 번만 실행
 
-    // ⭐️ 신체 정보 저장 함수
+    //  신체 정보 저장 함수
     const handleSaveUserInfo = async (dataToSave) => {
         try {
             console.log("Sending data to save:", dataToSave); // 디버깅 로그
@@ -183,7 +192,7 @@ const PageMypage = () => {
         }
     };
 
-    // ⭐️ 2. calculateBMR 함수를 Mifflin-St Jeor 함수 호출로 변경
+    //  calculateBMR 함수를 Mifflin-St Jeor 함수 호출로 변경
     const calculatedBMR = userInfo ? calculateMifflinStJeorBMR(
         userInfo.userGender,
         userInfo.userWeight,
@@ -195,14 +204,14 @@ const PageMypage = () => {
         {
             key: 'bodyInfo',
             label: '신체 정보 수정',
-            // ⭐️ BodyInfoForm에 props 전달
+            // ️ BodyInfoForm에 props 전달
             children: <BodyInfoForm initialData={userInfo} onSave={handleSaveUserInfo} />,
         },
         {
             key: 'personalInfo',
             label: '개인 정보 수정',
-            // ⭐️ PersonalInfoForm에 email prop 전달
-            children: <PersonalInfoForm email={userData.email} />,
+            // ️ PersonalInfoForm에 email prop 전달
+            children: <PersonalInfoForm userId={userData.userId} />,
         },
     ];
 
@@ -213,9 +222,7 @@ const PageMypage = () => {
                 <div className="profile-header">
                     <div className="profile-avatar"><UserOutlined /></div>
                     <div className="profile-text">
-                        {/* ⭐️ userData state 사용 */}
-                        <h2>안녕하세요! {userData.nickname} 님</h2>
-                        {/* ⭐️ 계산된 BMR 표시 */}
+                        <h2>안녕하세요! {userData.userId} 님</h2>
                         <p>현재 기초대사량은 {calculatedBMR} Kcal 입니다.</p>
                     </div>
                 </div>

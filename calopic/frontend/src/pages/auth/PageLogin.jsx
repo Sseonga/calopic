@@ -55,13 +55,21 @@ const PageLogin = () =>{
 
             if(success && loginUser) {
                 setUser(loginUser);
+
+                // localStorage에 로그인 정보 저장
+                localStorage.setItem('userId', loginUser.userId); // 'test11' 같은 아이디 저장
+
+                // 백엔드 응답에 nickname이 없다면, 일단 아이디를 닉네임으로 저장
+                // (만약 loginUser 객체에 nickname 필드가 있다면 loginUser.nickname 사용)
+                localStorage.setItem('userNickname', loginUser.userId);
+
                 navigate("/");
             } else {
                 setErrorMsg(response.data.message || "로그인 실패");
             }
         } catch(error) {
             console.error("로그인 오류:", error);
-            setErrorMsg(error.userMessage);
+            setErrorMsg(error.userMessage || "로그인 중 오류가 발생했습니다.");
         } finally {
             setLoading(false);
         }
