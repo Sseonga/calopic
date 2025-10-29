@@ -22,10 +22,11 @@
     <resultMap id="LayoutMap" type="fs.human.calopic.layout.vo.LayoutVO">
         <id property="userId" column="USER_ID"/>
         <result property="userName" column="USER_NAME"/>
+        <result property="isAdmin"  column="IS_ADMIN"/>
     </resultMap>
 
     <select id="selectUserNameById" parameterType="long" resultMap="LayoutMap">
-        SELECT USER_ID, USER_NAME
+        SELECT USER_ID, USER_NAME, IS_ADMIN
         FROM TB_USER
         WHERE USER_ID = #{userId}
     </select>

@@ -20,9 +20,11 @@ public class LayoutServiceImpl implements LayoutService {
 
         // 1) 세션에 이름이 이미 있으면 즉시 반환
         Object nameObj = session.getAttribute("LOGIN_USER_NAME");
+        Object adminObj = session.getAttribute("LOGIN_IS_ADMIN"); // 선택: 로그인 시 넣어뒀다면
         if (nameObj != null) {
             LayoutVO vo = new LayoutVO();
             vo.setUserName(String.valueOf(nameObj));
+            vo.setIsAdmin(adminObj != null ? String.valueOf(adminObj) : null);
 
             Object idObj = session.getAttribute("LOGIN_USER_ID");
             if (idObj != null) {
@@ -56,6 +58,7 @@ public class LayoutServiceImpl implements LayoutService {
 
         // 3) 캐시: 다음 요청부터는 DB 없이 세션에서 바로 응답
         session.setAttribute("LOGIN_USER_NAME", vo.getUserName());
+        session.setAttribute("LOGIN_IS_ADMIN", vo.getIsAdmin()); // 'Y'/'N'
         // 필요 시 하위 호환 키도 캐시해두면 프런트/다른 코드가 섞여 있어도 안전
         session.setAttribute("userName", vo.getUserName());
         session.setAttribute("userId", userId);

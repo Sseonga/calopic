@@ -105,6 +105,10 @@ public class AuthController {
         UserVO user = authService.login(req.userId(), req.userPassword());
         session.setAttribute("LOGIN_USER_NAME", user.getUserName());
         session.setAttribute("LOGIN_USER_ID",   user.getId());
+        //관리자 권한 세션 저장
+        String adminYn = (user.getIsAdmin() != null && user.getIsAdmin().trim().equalsIgnoreCase("Y")) ? "Y" : "N";
+        session.setAttribute("LOGIN_IS_ADMIN", adminYn);
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "로그인에 성공했습니다.",
