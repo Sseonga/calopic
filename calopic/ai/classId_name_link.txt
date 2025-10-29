@@ -1,0 +1,56 @@
+🧾 YOLO 클래스 ID 매칭표
+ID  YOLOname                    메뉴 한글명 (번역)      DB food_id,양추정계수
+
+0	Braised lotus roots         연근조림                360     0.075
+1	Dongchimi                   동치미                  461     1
+2	Japchae                     잡채                    337     0.375
+3	Kimchi stew                 김치찌개                187     1
+4	Kimchi	                    김치                    407     0.125
+5	Korean rib	                갈비찜                  221     0.625
+6	Korean style raw beef	    육회                    482     0.375
+7	Seasoned bean sprouts	    숙주나물                391     0.125
+8	Udon	                    우동                    112     1.75
+9	baek Kimchi	                백김치                  460     0.125
+10	banquet noodles	            잔치국수                94      1.75
+11	bean sprout soup	        콩나물국                178     1
+12	beef-bone soup	            설렁탕                  169     1.5
+13	bellflower greens	        도라지무침              385     0.375
+14	bibimbap	                비빔밥                  28      1.25
+15	boiled fish paste soup	    어묵국                  171     1.5
+16	budaejjigae	                부대찌개                206     1.5
+17	bulgogi	                    불고기                  259     0.375
+18	chonggak Kimchi	            총각김치                457     0.125
+19	cucumber kimchi	            오이김치                466     0.125
+20	cup rice	                컵밥                    42      0.525
+21	dried pollack soup	        북엇국                  165     1.5
+22	eel	                        장어구이                264     0.5
+23	fried rice	                볶음밥                  20      1
+24	green onion Kimchi	        파김치                  464     0.125
+25	grilled mackerel	        고등어구이              243     0.5
+26	janjorim	                장조림                  366     0.125
+27	jeyuk bokkeum	            제육볶음                304     1.25
+28	memil soba	                메밀소바                109     1.25
+29	miso soup	                된장국                  148     1.125
+30	mixed rice	                비빔밥 (혼합밥류)       37      1
+31	nabak Kimchi	            나박김치                460     0.25
+32	naengMyeon	                냉면                    96      2
+33	pickled sesame leaf	        깻잎절임                459     0.075
+34	pig hocks	                족발                    236     0.375
+35	pork belly	                삼겹살                  255     0.75
+36	radish Kimchi	            무김치                  458     0.125
+37	radish kimchi	            깍두기                  458     0.125
+38	rice ball	                주먹밥                  39      0.375
+39	rice roll	                김밥                    5       0.5
+40	rice	                    밥                      42      0.525
+41	seasoned bean sprouts	    숙주나물                391     0.125
+42	seasoned bellflower root	도라지무침              385     0.375
+43	seasoned bracken	        고사리나물              381     0.125
+44	seasoned zucchini	        애호박볶음              327     0.125
+45	seaweed soup	            미역국                  160     1.25
+46	seaweed	                    김                     245      0.05
+47	shellfish soup	            조개탕                  177     1.375
+48	spicy yuke jang	            육개장                  173     1.1
+49	spinach greens	            시금치나물              392     0.125
+50	stewed mackerel	            고등어조림              345     0.625
+51	stir-fried anchovies	    멸치볶음                311     0.05
+52	young radish Kimchi	        열무김치                408     0.125
