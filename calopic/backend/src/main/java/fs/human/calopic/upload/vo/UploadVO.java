@@ -32,6 +32,7 @@ public class UploadVO {
 
     private String yoloId;
     private BigDecimal qtyCoeffi;
+    private String imgUrl;
 
     private String userId;       // PK 혹은 로그인 식별자
     private String userGender;   // 'gender01' | 'gender02'
