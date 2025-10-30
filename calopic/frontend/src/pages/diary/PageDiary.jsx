@@ -370,7 +370,7 @@ export default function PageDiary() {
                                 >
                                     <div className="card-image-box">
                                         <img
-                                            src={record.image || `/path/to/default_${mealType}_image.jpg`}
+                                            src={record.image || `/images/mealtype/default_${mealType}_image.jpg`}
                                             alt={`${mealType} 식단 이미지`}
                                         />
                                     </div>
