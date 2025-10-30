@@ -87,6 +87,14 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
           return hit?.sourceUid ?? null;
         };
 
+        const findEstimatedWeight = (food) => {
+          const hit = detections.find(d =>
+            String(d.class_id) === String(food.yoloId) ||
+            d.class_name === food.foodName
+          );
+          return hit?.estimated_weight ?? null;
+        };
+
         const uniqueByName = new Map();
         (data || []).forEach(f => {
           if (!uniqueByName.has(f.foodName)) {
@@ -99,7 +107,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               proteinPer100: Number(f.foodProtein) || 0,
               carbsPer100: Number(f.foodCarbo) || 0,
               fatPer100: Number(f.foodFat) || 0,
-              amount: 100,
+              amount: Math.round(100*(Number(findEstimatedWeight(f)) || 1)*(Number(f.qtyCoeffi) || 1)), // 기본 100g
               unit: 'g',
             });
           }
