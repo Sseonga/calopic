@@ -363,7 +363,7 @@ const PageCalculator = () => {
                   <input
                       type="text"
                       placeholder="식품명을 입력하세요."
-                      className="input-field"
+                      className="input-field-cal"
                       value={searchQuery} //  Connect input value to state//
                       onChange={handleSearchChange} //  Connect onChange to handler function
                   />
