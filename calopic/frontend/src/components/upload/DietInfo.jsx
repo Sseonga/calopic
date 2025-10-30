@@ -8,6 +8,45 @@ import CustomSelect2 from '../common/CustomSelect2';
 
 const IMG_CARROT = '/images/carrot.jpg';
 
+// 후보 경로들을 만들어 순차 시도
+const buildImageCandidates = (name) => {
+  const clean = String(name || '').trim();
+
+  // 퍼센트 인코딩을 피한 원문 우선
+  const base = '/images/food-sample';
+  const nfc = clean.normalize('NFC');
+  const nfd = clean.normalize('NFD');
+
+  return [
+    `${base}/${clean}_샘플.jpg`,          // 원문
+    `${base}/${nfc}_샘플.jpg`,            // NFC 정규화
+    `${base}/${nfd}_샘플.jpg`,            // NFD 정규화 (맥에서 복사된 한글 파일 대비)
+    `${base}/${clean.replace(/\s+/g, '')}_샘플.jpg`,   // 공백 제거
+    `${base}/${clean.replace(/_/g, ' ')}_샘플.jpg`,    // 언더스코어→공백
+    // 마지막에 인코딩 버전 (환경에 따라 필요)
+    `${base}/${encodeURI(clean)}_샘플.jpg`,
+  ];
+};
+
+// 이미지 로더: 실패 시 다음 후보로 자동 이동, 모두 실패하면 당근 이미지
+function ImageSmart({ name, alt, style }) {
+  const candidates = useMemo(() => buildImageCandidates(name), [name]);
+  const [idx, setIdx] = useState(0);
+
+  const src = idx < candidates.length ? candidates[idx] : IMG_CARROT;
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={style}
+      onError={() => {
+        setIdx((prev) => (prev + 1 <= candidates.length ? prev + 1 : prev));
+      }}
+    />
+  );
+}
+
 export default function DietInfo({ onChange, onTotalsChange, detections = [] }) {
   const [autoItems, setAutoItems] = useState([]);    // 감지 기반
   const [manualItems, setManualItems] = useState([]); // 수동 추가
@@ -24,7 +63,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
     })();
   }, []);
 
-   // *** AI 탐지 결과(detections)가 바뀔 때 자동으로 DB에서 음식정보 불러오기 ***
+  // AI 탐지 결과(detections)가 바뀔 때 자동으로 DB에서 음식정보 불러오기
   useEffect(() => {
     if (!detections || detections.length === 0) {
       setAutoItems([]);
@@ -40,11 +79,10 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
           classIds, classNames
         });
 
-        // foodName ↔ detection 매칭으로 sourceUid 부여
         const findSourceUid = (food) => {
           const hit = detections.find(d =>
-            String(d.class_id) === String(food.yoloId) || // 있으면
-            d.class_name === food.foodName                // 또는 이름 매칭
+            String(d.class_id) === String(food.yoloId) ||
+            d.class_name === food.foodName
           );
           return hit?.sourceUid ?? null;
         };
@@ -54,7 +92,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
           if (!uniqueByName.has(f.foodName)) {
             uniqueByName.set(f.foodName, {
               id: crypto.randomUUID(),
-              sourceUid: findSourceUid(f),         // ← 핵심: 어느 썸네일에서 온 건지
+              sourceUid: findSourceUid(f),
               foodId: f.foodId,
               name: f.foodName,
               kcalPer100: Number(f.foodKcal) || 0,
@@ -63,12 +101,11 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               fatPer100: Number(f.foodFat) || 0,
               amount: 100,
               unit: 'g',
-              img: '/images/carrot.jpg',
             });
           }
         });
 
-        setAutoItems(Array.from(uniqueByName.values())); // 교체
+        setAutoItems(Array.from(uniqueByName.values()));
       } catch (e) {
         console.error('음식정보 불러오기 실패:', e?.response?.status, e?.response?.data, e);
         setAutoItems([]);
@@ -100,7 +137,6 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
 
   const emitManual = (next) => setManualItems(next);
   const handleRemove = (id) => {
-    // 자동 항목도 카드 X로 없애고 싶다면 autoItems에서도 빼줍니다.
     setAutoItems(prev => prev.filter(it => it.id !== id));
     setManualItems(prev => prev.filter(it => it.id !== id));
   };
@@ -118,7 +154,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
       ...manualItems,
       {
         id: crypto.randomUUID(),
-        sourceUid: null, // 수동 추가
+        sourceUid: null,
         foodId: f.foodId,
         name: f.foodName,
         kcalPer100: Number(f.foodKcal)      || 0,
@@ -127,7 +163,6 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
         fatPer100:     Number(f.foodFat)     || 0,
         amount: Number(amount),
         unit,
-        img: '/images/carrot.jpg',
       },
     ]);
     form.resetFields(); setUnit('g'); setSelectedFood(null);
@@ -174,8 +209,15 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               <Card key={it.id} hoverable style={{ width:180, borderRadius:12 }}
                 cover={
                   <div style={{ position:'relative', height:110, overflow:'hidden', borderTopLeftRadius:12, borderTopRightRadius:12 }}>
-                    <img src={it.img} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                    <button onClick={()=>handleRemove(it.id)} style={{ position:'absolute', top:8, right:8, width:24, height:24, borderRadius:24, background:'rgba(0,0,0,0.55)', color:'#fff', border:'none', display:'grid', placeItems:'center', cursor:'pointer' }} aria-label="삭제" title="삭제">
+                    <ImageSmart
+                      name={it.name}
+                      alt={it.name}
+                      style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                    />
+                    <button
+                      onClick={()=>handleRemove(it.id)}
+                      style={{ position:'absolute', top:8, right:8, width:24, height:24, borderRadius:24, background:'rgba(0,0,0,0.55)', color:'#fff', border:'none', display:'grid', placeItems:'center', cursor:'pointer' }}
+                      aria-label="삭제" title="삭제">
                       <CloseOutlined />
                     </button>
                   </div>
