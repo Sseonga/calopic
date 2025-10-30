@@ -22,4 +22,6 @@ public class AdminVO {
     private Double foodCarbo;
     private Double foodProtein;
     private Double foodFat;
+    private Long yoloId;
+    private Double qtyCoeffi;
 }

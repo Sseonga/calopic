@@ -58,10 +58,12 @@
         <result column="FOOD_CARBO" property="foodCarbo"/>
         <result column="FOOD_PROTEIN" property="foodProtein"/>
         <result column="FOOD_FAT" property="foodFat"/>
+        <result column="YOLO_ID" property="yoloId"/>
+        <result column="QTY_COEFFI" property="qtyCoeffi"/>
     </resultMap>
 
     <select id="selectClasses" resultMap="FoodMap">
-        SELECT FOOD_ID, FOOD_NAME, FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT
+        SELECT FOOD_ID, FOOD_NAME, FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT, YOLO_ID, QTY_COEFFI
         FROM TB_FOOD
         ORDER BY FOOD_ID ASC
     </select>
@@ -69,10 +71,10 @@
     <insert id="insertClass" parameterType="fs.human.calopic.admin.vo.AdminVO">
         INSERT INTO TB_FOOD (
         FOOD_ID, FOOD_NAME, FOOD_WEIGHT,
-        FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT, CREATED_DATE
+        FOOD_KCAL, FOOD_CARBO, FOOD_PROTEIN, FOOD_FAT, YOLO_ID, QTY_COEFFI, CREATED_DATE
         ) VALUES (
         #{foodId}, #{foodName}, '100g',
-        #{foodKcal}, #{foodCarbo}, #{foodProtein}, #{foodFat}, SYSDATE
+        #{foodKcal}, #{foodCarbo}, #{foodProtein}, #{foodFat}, #{yoloId}, #{qtyCoeffi}, SYSDATE
         )
     </insert>
 

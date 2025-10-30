@@ -50,6 +50,8 @@ useEffect(() => {
             carbo: v.foodCarbo,
             protein: v.foodProtein,
             fat: v.foodFat,
+            yoloId: v.yoloId,
+            qtyCoeffi: v.qtyCoeffi,
             checked: false,
           }))
         );
@@ -151,14 +153,16 @@ const onSelectAll = (e) => {
 
 
   // 테이블 헤더
-  const headers = ['클래스 번호', '음식명', '칼로리', '탄수화물', '단백질', '지방', ''];
+  const headers = ['클래스 번호', '음식명', '칼로리', '탄수화물', '단백질', '지방', 'YOLO-ID', '양추정계수', ''];
 
   const colGroup = [
-    { width: '12%' },
+    { width: '10%' },
     { width: '22%' },
-    { width: '12%' },
-    { width: '12%' },
-    { width: '12%' },
+    { width: '10%' },
+    { width: '10%' },
+    { width: '10%' },
+    { width: '10%' },
+    { width: '10%' },
     { width: '12%' },
     { width: '5%' },
   ];
@@ -171,6 +175,8 @@ const onSelectAll = (e) => {
       <td>{row.carbo}</td>
       <td>{row.protein}</td>
       <td>{row.fat}</td>
+      <td>{row.yoloId}</td>
+      <td>{row.qtyCoeffi}</td>
       <td onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
@@ -303,6 +309,26 @@ const onSelectAll = (e) => {
                 label="지방"
                 name="foodFat"
                 rules={[{ required: true, message: '지방을 입력하세요.' }]}
+                className="acf-col"
+              >
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </div>
+
+            <div className="acf-row">
+              <Form.Item
+                label="YOLO-ID"
+                name="yoloId"
+                // rules={[{ required: true, message: '단백질을 입력하세요.' }]}
+                className="acf-col"
+              >
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="양추정 계수"
+                name="qtyCoeffi"
+                // rules={[{ required: true, message: '지방을 입력하세요.' }]}
                 className="acf-col"
               >
                 <InputNumber min={0} style={{ width: '100%' }} />
