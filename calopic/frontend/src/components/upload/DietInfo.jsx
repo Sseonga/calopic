@@ -8,44 +8,44 @@ import CustomSelect2 from '../common/CustomSelect2';
 
 const IMG_CARROT = '/images/carrot.jpg';
 
-// 후보 경로들을 만들어 순차 시도
-const buildImageCandidates = (name) => {
-  const clean = String(name || '').trim();
+// // 후보 경로들을 만들어 순차 시도
+// const buildImageCandidates = (name) => {
+//   const clean = String(name || '').trim();
 
-  // 퍼센트 인코딩을 피한 원문 우선
-  const base = '/images/food-sample';
-  const nfc = clean.normalize('NFC');
-  const nfd = clean.normalize('NFD');
+//   // 퍼센트 인코딩을 피한 원문 우선
+//   const base = '/images/food-sample';
+//   const nfc = clean.normalize('NFC');
+//   const nfd = clean.normalize('NFD');
 
-  return [
-    `${base}/${clean}_샘플.jpg`,          // 원문
-    `${base}/${nfc}_샘플.jpg`,            // NFC 정규화
-    `${base}/${nfd}_샘플.jpg`,            // NFD 정규화 (맥에서 복사된 한글 파일 대비)
-    `${base}/${clean.replace(/\s+/g, '')}_샘플.jpg`,   // 공백 제거
-    `${base}/${clean.replace(/_/g, ' ')}_샘플.jpg`,    // 언더스코어→공백
-    // 마지막에 인코딩 버전 (환경에 따라 필요)
-    `${base}/${encodeURI(clean)}_샘플.jpg`,
-  ];
-};
+//   return [
+//     `${base}/${clean}_샘플.jpg`,          // 원문
+//     `${base}/${nfc}_샘플.jpg`,            // NFC 정규화
+//     `${base}/${nfd}_샘플.jpg`,            // NFD 정규화 (맥에서 복사된 한글 파일 대비)
+//     `${base}/${clean.replace(/\s+/g, '')}_샘플.jpg`,   // 공백 제거
+//     `${base}/${clean.replace(/_/g, ' ')}_샘플.jpg`,    // 언더스코어→공백
+//     // 마지막에 인코딩 버전 (환경에 따라 필요)
+//     `${base}/${encodeURI(clean)}_샘플.jpg`,
+//   ];
+// };
 
-// 이미지 로더: 실패 시 다음 후보로 자동 이동, 모두 실패하면 당근 이미지
-function ImageSmart({ name, alt, style }) {
-  const candidates = useMemo(() => buildImageCandidates(name), [name]);
-  const [idx, setIdx] = useState(0);
+// // 이미지 로더: 실패 시 다음 후보로 자동 이동, 모두 실패하면 당근 이미지
+// function ImageSmart({ name, alt, style }) {
+//   const candidates = useMemo(() => buildImageCandidates(name), [name]);
+//   const [idx, setIdx] = useState(0);
 
-  const src = idx < candidates.length ? candidates[idx] : IMG_CARROT;
+//   const src = idx < candidates.length ? candidates[idx] : IMG_CARROT;
 
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={style}
-      onError={() => {
-        setIdx((prev) => (prev + 1 <= candidates.length ? prev + 1 : prev));
-      }}
-    />
-  );
-}
+//   return (
+//     <img
+//       src={src}
+//       alt={alt}
+//       style={style}
+//       onError={() => {
+//         setIdx((prev) => (prev + 1 <= candidates.length ? prev + 1 : prev));
+//       }}
+//     />
+//   );
+// }
 
 export default function DietInfo({ onChange, onTotalsChange, detections = [] }) {
   const [autoItems, setAutoItems] = useState([]);    // 감지 기반
@@ -109,6 +109,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               fatPer100: Number(f.foodFat) || 0,
               amount: Math.round(100*(Number(findEstimatedWeight(f)) || 1)*(Number(f.qtyCoeffi) || 1)), // 기본 100g
               unit: 'g',
+              img: f.imgUrl || IMG_CARROT,
             });
           }
         });
@@ -171,6 +172,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
         fatPer100:     Number(f.foodFat)     || 0,
         amount: Number(amount),
         unit,
+        img: f.imgUrl || IMG_CARROT,
       },
     ]);
     form.resetFields(); setUnit('g'); setSelectedFood(null);
@@ -217,7 +219,11 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               <Card key={it.id} hoverable style={{ width:180, borderRadius:12 }}
                 cover={
                   <div style={{ position:'relative', height:110, overflow:'hidden', borderTopLeftRadius:12, borderTopRightRadius:12 }}>
-                    <ImageSmart
+                    <img src={it.img} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <button onClick={()=>handleRemove(it.id)} style={{ position:'absolute', top:8, right:8, width:24, height:24, borderRadius:24, background:'rgba(0,0,0,0.55)', color:'#fff', border:'none', display:'grid', placeItems:'center', cursor:'pointer' }} aria-label="삭제" title="삭제">
+                      <CloseOutlined />
+                    </button>
+                    {/* <ImageSmart
                       name={it.name}
                       alt={it.name}
                       style={{ width:'100%', height:'100%', objectFit:'cover' }}
@@ -227,7 +233,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
                       style={{ position:'absolute', top:8, right:8, width:24, height:24, borderRadius:24, background:'rgba(0,0,0,0.55)', color:'#fff', border:'none', display:'grid', placeItems:'center', cursor:'pointer' }}
                       aria-label="삭제" title="삭제">
                       <CloseOutlined />
-                    </button>
+                    </button> */}
                   </div>
                 }
                 bodyStyle={{ padding:12 }}

@@ -19,6 +19,7 @@
         <result property="foodNatrium" column="FOOD_NATRIUM" javaType="java.math.BigDecimal"/>
         <result property="yoloId" column="YOLO_ID" jdbcType="VARCHAR"/>
         <result property="qtyCoeffi" column="QTY_COEFFI" javaType="java.math.BigDecimal"/>
+        <result property="imgUrl" column="IMG_URL" jdbcType="VARCHAR"/>
 
         <result property="userId"      column="USER_ID"/>
         <result property="userGender"  column="USER_GENDER"/>
@@ -37,7 +38,8 @@
         FOOD_WEIGHT,
         YOLO_ID,
         TO_NUMBER(REGEXP_SUBSTR(FOOD_WEIGHT, '\d+')) AS FOOD_WEIGHT_GRAM,
-        QTY_COEFFI
+        QTY_COEFFI,
+        IMG_URL
     </sql>
 
     <select id="selectAllFood" resultMap="FoodMap">
