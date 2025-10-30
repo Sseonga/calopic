@@ -98,6 +98,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
         const uniqueByName = new Map();
         (data || []).forEach(f => {
           if (!uniqueByName.has(f.foodName)) {
+            console.log(f.imgUrl);
             uniqueByName.set(f.foodName, {
               id: crypto.randomUUID(),
               sourceUid: findSourceUid(f),
@@ -219,7 +220,7 @@ export default function DietInfo({ onChange, onTotalsChange, detections = [] }) 
               <Card key={it.id} hoverable style={{ width:180, borderRadius:12 }}
                 cover={
                   <div style={{ position:'relative', height:110, overflow:'hidden', borderTopLeftRadius:12, borderTopRightRadius:12 }}>
-                    <img src={it.img} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <img src={`${it.img}`}  alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                     <button onClick={()=>handleRemove(it.id)} style={{ position:'absolute', top:8, right:8, width:24, height:24, borderRadius:24, background:'rgba(0,0,0,0.55)', color:'#fff', border:'none', display:'grid', placeItems:'center', cursor:'pointer' }} aria-label="삭제" title="삭제">
                       <CloseOutlined />
                     </button>
